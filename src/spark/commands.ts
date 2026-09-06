@@ -1,7 +1,7 @@
-﻿import { HttpsError } from "./errors";
+import { HttpsError } from "./errors";
 import { actor, salesDb, salesAdminAuth, requireId, FieldPath } from "./db";
 import { saveRecord, markOverduePage } from "./records";
-import { refreshCustomer, syncStep } from "./sync";
+import { assignUnassignedCustomersForStaff, refreshCustomer, syncStep } from "./sync";
 import { rebuildTargets } from "./targets";
 import { branchIds, today, type Data } from "../../shared/schema";
 const onCall = (fn: (request: { data: Data }) => Promise<any>) => fn;
@@ -66,7 +66,8 @@ export const saveUser = onCall(async (request) => {
     branchId: typeof d.branchId === "string" ? d.branchId : "",
     updatedAt: new Date().toISOString(),
   });
-  return { uid };
+  const assignedCustomers = await assignUnassignedCustomersForStaff(uid, d.branchId);
+  return { uid, assignedCustomers };
 });
 export const assignCustomer = onCall(async (request) => {
   await actor(request, true);

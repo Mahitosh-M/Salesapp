@@ -1,4 +1,4 @@
-﻿import { BookOpen, CircleHelp } from "lucide-react";
+import { BookOpen, CircleHelp } from "lucide-react";
 import { Header, Panel } from "../components/ui";
 import { label, modules } from "../../shared/schema";
 
@@ -123,7 +123,7 @@ export default function AdminGuide() {
         <div className="guide-card">
           <h3>First setup</h3>
           <p>Open <b>CISapp Sync</b>, connect the CISapp Admin account, and run Initial import. Then open <b>People & settings</b>, add each Staff member, select SINDHANUR or MASKI, and keep Access enabled only for active users.</p>
-          <p>Open <b>Customers</b>, assign an owner and branch, then open <b>Targets</b> to set the monthly amount. These assignments control which records Staff can read and which sales count toward their target.</p>
+          <p>In CISapp, edit each customer and select SINDHANUR or MASKI. In Salesapp, create Staff with the same branch; unassigned synced customers from that branch are assigned automatically. You can still change an owner manually from Customers.</p>
           <h3>Daily routine</h3>
           <p>Start with <b>Overview</b> and <b>Performance</b>. Check overdue tasks, open collection balances, visits, target progress, and work completed by each Staff member.</p>
           <p>Create or reassign work where action is needed. Use Sync now after important CISapp changes; Salesapp then refreshes customer summaries and checks whether a last order is 10 days old enough to create a visit.</p>

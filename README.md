@@ -103,4 +103,8 @@ The workflow deploys Firebase Hosting only and stays compatible with the Spark p
 ## Desktop and mobile use
 
 Use the same production link on desktop or mobile. Desktop shows a sidebar and wider panels; mobile shows touch-friendly navigation and single-column forms. The site is installable from the browser with **Install app** or **Add to Home Screen**. The app shell can reopen after installation, while live customer and financial data still requires a connection.
+## CISapp branch assignment and automatic follow-ups
 
+CISapp customer records have a required Branch choice: SINDHANUR or MASKI. Salesapp Sync copies that branch. When an Admin creates or updates an active Staff profile with the same branch, Salesapp assigns currently unassigned customers in that branch to the Staff member. A later sync also assigns a newly imported, unassigned customer to the first active Staff UID in the matching branch. Existing manual customer assignments are preserved.
+
+Salesapp uses the synchronized latest normal business invoice date to create automatic follow-ups after 15 calendar days without an order. Customers with no normal business order also receive a follow-up after the source check. Automatic IDs are stable, so reopening the app or running sync again does not duplicate them. Manual follow-ups remain separate. When a newer order changes the date, an obsolete pending automatic follow-up and its linked task are cancelled; completed records remain as history.

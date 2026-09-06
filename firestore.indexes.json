@@ -693,6 +693,24 @@
                                            "order":  "ASCENDING"
                                        }
                                    ]
+                    },
+                    {
+                        "collectionGroup":  "staffCustomers",
+                        "queryScope":  "COLLECTION",
+                        "fields":  [
+                                       {
+                                           "fieldPath":  "assignedStaffId",
+                                           "order":  "ASCENDING"
+                                       },
+                                       {
+                                           "fieldPath":  "active",
+                                           "order":  "ASCENDING"
+                                       },
+                                       {
+                                           "fieldPath":  "__name__",
+                                           "order":  "ASCENDING"
+                                       }
+                                   ]
                     }
                 ],
     "fieldOverrides":  [

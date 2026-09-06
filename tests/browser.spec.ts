@@ -1,4 +1,4 @@
-﻿import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 async function login(page: Page, user = "arun") {
   await page.goto("/");
   await page.getByLabel("Email address").fill(`${user}@salesapp.test`);
@@ -314,7 +314,7 @@ test("Spark Admin creates Staff without replacing their own login", async ({
       password: "123456",
       role: "Staff",
       active: true,
-      branchId: "",
+      branchId: "SINDHANUR",
     });
     const user = await readOne("users", result.uid);
     await command("saveUser", {
@@ -323,7 +323,7 @@ test("Spark Admin creates Staff without replacing their own login", async ({
       email,
       role: "Staff",
       active: false,
-      branchId: "",
+      branchId: "SINDHANUR",
     });
     const disabled = await readOne("users", result.uid);
     return {

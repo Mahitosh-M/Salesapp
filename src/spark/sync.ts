@@ -311,18 +311,80 @@ export async function syncStep(
     throw new HttpsError("failed-precondition", message);
   }
 }
+const validBranch = (value: unknown): value is "SINDHANUR" | "MASKI" =>
+  value === "SINDHANUR" || value === "MASKI";
+
+async function automaticAssignment(id: string, customer: Data, current: Data) {
+  if (current.assignedStaffId) return current;
+  const branchId = customer.payload?.branchId;
+  if (!validBranch(branchId)) return current;
+  const staff = (await allRows("users", ["branchId", "==", branchId]))
+    .filter((row) => row.role === "Staff" && row.active === true)
+    .sort((a, b) => String(a.id).localeCompare(String(b.id)))[0];
+  if (!staff) return current;
+  const assignment = {
+    customerId: id,
+    assignedStaffId: staff.id,
+    branchId,
+    updatedAt: new Date().toISOString(),
+    assignmentSource: "CISAPP_BRANCH",
+  };
+  const batch = salesDb.batch();
+  batch.set(salesDb.doc(`customerAssignments/${id}`), assignment);
+  batch.set(salesDb.doc(`monthlyAssignments/${today().slice(0, 7)}_${id}`), {
+    customerId: id,
+    staffId: staff.id,
+    branchId,
+    month: today().slice(0, 7),
+  });
+  await batch.commit();
+  return assignment;
+}
+
+export async function assignUnassignedCustomersForStaff(staffId: string, branchId: string) {
+  if (!validBranch(branchId)) return 0;
+  const [customers, assignments] = await Promise.all([
+    allRows("adminCis_customers"),
+    allRows("customerAssignments"),
+  ]);
+  const assigned = new Set(assignments.map((row) => row.customerId));
+  let changed = 0;
+  for (const row of customers) {
+    if (assigned.has(row.id) || row.payload?.branchId !== branchId) continue;
+    const batch = salesDb.batch();
+    batch.set(salesDb.doc(`customerAssignments/${row.id}`), {
+      customerId: row.id,
+      assignedStaffId: staffId,
+      branchId,
+      updatedAt: new Date().toISOString(),
+      assignmentSource: "CISAPP_BRANCH",
+    });
+    batch.set(salesDb.doc(`monthlyAssignments/${today().slice(0, 7)}_${row.id}`), {
+      customerId: row.id,
+      staffId,
+      branchId,
+      month: today().slice(0, 7),
+    });
+    await batch.commit();
+    await refreshCustomer(row.id);
+    changed++;
+  }
+  return changed;
+}
+
 export async function refreshCustomer(id: string) {
-  const [c, credit, assignment, orders] = await Promise.all([
+  const [c, credit, assignmentDoc, orders] = await Promise.all([
     salesDb.doc(`${mirror("customers")}/${id}`).get(),
     salesDb.doc(`${mirror("customerCreditProfiles")}/${id}`).get(),
     salesDb.doc(`customerAssignments/${id}`).get(),
     salesDb.doc(`customerOrderDates/${id}`).get(),
   ]);
+  const assignment = await automaticAssignment(id, c.data() || {}, assignmentDoc.data() || {});
   const data = materializeCustomer(
     id,
     c.data()?.payload || null,
     credit.data()?.payload || null,
-    assignment.data() || {},
+    assignment,
     new Date().toISOString(),
     orders.data() || {},
   );
