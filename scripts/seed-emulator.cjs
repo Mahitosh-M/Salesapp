@@ -1,0 +1,29 @@
+const {createRequire}=require('node:module');const path=require('node:path');
+if(process.env.FIRESTORE_EMULATOR_HOST!=='127.0.0.1:8085'||process.env.FIREBASE_AUTH_EMULATOR_HOST!=='127.0.0.1:9099')throw Error('Seed requires local demo Firestore AND Auth emulators. Production seeding is prohibited.');
+process.env.GCLOUD_PROJECT='demo-salesapp';
+const {salesDb:db,salesAdminAuth:auth}=require('../functions/lib/functions/src/db.js');
+const {saveRecord}=require('../functions/lib/functions/src/records.js');
+const {refreshCustomer}=require('../functions/lib/functions/src/sync.js');
+const {rebuildTargets}=require('../functions/lib/functions/src/targets.js');
+const {today}=require('../functions/lib/shared/schema.js');
+async function main(){if(process.argv.includes('--reset'))await fetch('http://127.0.0.1:8085/emulator/v1/projects/demo-salesapp/databases/(default)/documents',{method:'DELETE'});const date=today(),month=date.slice(0,7),now=new Date().toISOString();const people=[['admin','Mahi','Admin'],['arun','Arun Kumar','Staff'],['neha','Neha Rao','Staff']];
+ for(const[uid,name,role]of people){try{await auth.createUser({uid,email:`${uid}@salesapp.test`,password:'SalesappDemo!2026',displayName:name});}catch(e){if(e.code!=='auth/uid-already-exists'&&e.code!=='auth/email-already-exists')throw e;}await db.doc(`users/${uid}`).set({uid,name,role,email:`${uid}@salesapp.test`,active:true,branchId:'SHOP_A'});}
+ const admin={uid:'admin',name:'Mahi',role:'Admin',email:'admin@salesapp.test',active:true};
+ const customers=[['abc','ABC Medical','Maski','arun',85000,18500,8500],['city','City Health','Raichur','arun',67000,9200,0],['krishna','Krishna Medical','Maski','arun',40000,6000,2500],['north','Northside Stores','Raichur','neha',110000,12000,3000]];
+ for(const[id,name,area,owner,sales,outstanding,overdue]of customers){await db.doc(`adminCis_customers/${id}`).set({payload:{name,mobile:'9999999999',area,totalOutstandingAmount:outstanding,financialSummaryUpdatedAt:now,updatedAt:now}});await db.doc(`adminCis_customerCreditProfiles/${id}`).set({payload:{customerId:id,overdueAmount:overdue,oldestOverdueDate:overdue?date:null,nextInvoiceDueDate:date,nextInvoiceDueAmount:overdue,lastCreditReviewAt:now,creditStatus:'active',approvedCreditLimit:50000,availableCredit:50000-outstanding}});await db.doc(`adminCis_customerIntelligenceSummaries/${id}`).set({payload:{customerId:id,tier:'Tier 2',totalSales:sales,totalProfit:sales*.12,intelligenceScore:78,riskLevel:'Low',recommendedAction:'Maintain a consistent follow-up schedule.',calculatedAt:now}});await db.doc(`adminCis_pcBalances/${id}`).set({payload:{customerId:id,availablePc:350}});await db.doc(`adminCis_customerMonthlySnapshots/${id}_${month}`).set({payload:{customerId:id,month,totalSales:sales,totalProfit:sales*.12,needsBackfill:false,updatedAt:now}});await db.doc(`customerAssignments/${id}`).set({customerId:id,assignedStaffId:owner,branchId:'SHOP_A'});await db.doc(`monthlyAssignments/${month}_${id}`).set({month,customerId:id,staffId:owner,branchId:'SHOP_A'});await refreshCustomer(id);}
+ await db.doc(`adminCis_businessMonthlySnapshots/${month}`).set({payload:{month,totalSales:302000,needsBackfill:false,updatedAt:now}});
+ for(const[scope,id,target]of [['BUSINESS','company',500000],['STAFF','arun',300000],['STAFF','neha',200000],['BRANCH','SHOP_A',400000]])await db.doc(`targets/${scope}_${id}_${month}`).set({scope,subjectId:id,month,target});await rebuildTargets(month);
+ const base={assignedStaffId:'arun',priority:'HIGH'};
+ await saveRecord(admin,'collectionPromises','demo-promise',{...base,title:'Collection follow-up · ABC Medical',customerId:'abc',amount:5000,promiseDate:date,status:'PROMISED',priority:'URGENT'});
+ await saveRecord(admin,'followUps','demo-reorder',{...base,title:'Reorder follow-up · City Health',customerId:'city',dueDate:date,status:'PENDING',notes:'Confirm the next requirement.'});
+ await saveRecord(admin,'customerRequirements','demo-requirement',{...base,title:'Customer requirement · Krishna Medical',customerId:'krishna',product:'Product X',quantity:'12 packs',dueDate:date,status:'OPEN'});
+ await saveRecord(admin,'visits','demo-visit',{...base,title:'Visit ABC Medical',customerId:'abc',purpose:'Discuss the next order',dueDate:date,status:'PLANNED'});
+ await saveRecord(admin,'opportunities','demo-opportunity',{...base,title:'New product conversation · City Health',customerId:'city',type:'NEW_PRODUCT',dueDate:date,status:'OPEN',recommendedAction:'Introduce the new product range.'});
+ await saveRecord(admin,'leads','demo-lead',{...base,title:'Sunrise Traders',status:'INTERESTED',phone:'9999999999',area:'Maski',source:'Referral',nextFollowUp:date});
+ await saveRecord(admin,'campaigns','demo-campaign',{...base,assignedStaffId:'admin',title:'September reconnect',status:'ACTIVE',segment:'ALL_ASSIGNED',startDate:date,endDate:month+'-28',objective:'Reconnect and understand current requirements'});
+ await saveRecord(admin,'campaignAssignments','demo-campaign_city',{...base,title:'September reconnect · City Health',customerId:'city',campaignId:'demo-campaign',dueDate:date,status:'PENDING'});
+ await saveRecord(admin,'messageTemplates','demo-template',{...base,assignedStaffId:'admin',title:'Friendly collection reminder',status:'APPROVED',category:'COLLECTION_REMINDER',body:'Hello {{customerName}}, this is {{staffName}}. Our latest record shows {{amount}} overdue. Please let us know if you have already paid or when we can follow up. Thank you.'});
+ await db.doc('publicState/sync').set({lastSuccessfulSync:now,lastCompletedAt:now});await db.doc('settings/general').set({businessName:'Demo business'});
+ console.log('Local demo workspace ready. Admin: admin@salesapp.test; Staff: arun@salesapp.test; Password: SalesappDemo!2026');
+}
+main().catch(e=>{console.error(e);process.exitCode=1;});

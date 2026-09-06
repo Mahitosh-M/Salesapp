@@ -1,0 +1,28 @@
+﻿name: Deploy Salesapp to Firebase Hosting
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: salesapp-production
+  cancel-in-progress: true
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_USE_EMULATORS: "false"
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/695799416355/locations/global/workloadIdentityPools/github-salesapp/providers/github
+          service_account: github-actions-salesapp@salesapp-aaa7b.iam.gserviceaccount.com
+      - run: npx --yes firebase-tools@15.24.0 deploy --project salesapp-aaa7b --only hosting --non-interactive

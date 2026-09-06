@@ -1,0 +1,228 @@
+import { Message } from "./Customers";
+import { useEffect, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Plus, Search, ArrowUpRight, RefreshCw } from "lucide-react";
+import { modules, label, today } from "../../shared/schema";
+import { useAuth, useRows } from "../hooks";
+import { RecordEditor } from "../components/RecordEditor";
+import {
+  Header,
+  Badge,
+  Empty,
+  ErrorBox,
+  Loading,
+  PageEnd,
+  when,
+} from "../components/ui";
+import { command, readOne, type Row } from "../services/sales";
+export default function Workflows() {
+  const { kind = "tasks" } = useParams();
+  return <Workflow key={kind} kind={kind} />;
+}
+function Workflow({ kind }: { kind: string }) {
+  const [params] = useSearchParams();
+  const [messageRecord, setMessageRecord] = useState<Row | null>(null);
+  const spec = modules[kind];
+  const { profile } = useAuth();
+  const state = useRows(kind);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("ALL");
+  const [edit, setEdit] = useState<Row | null | undefined>();
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    const recordId = params.get("record");
+    if (recordId)
+      readOne(kind, recordId)
+        .then((r) => r && setEdit(r))
+        .catch((e) => setError(e.message));
+  }, [kind, params]);
+  if (!spec) return <Empty title="Page not found" />;
+  if (spec.adminOnly && profile?.role !== "Admin")
+    return <Empty title="Admin access required" />;
+  const rows = state.rows.filter(
+    (r) =>
+      (status === "ALL" || r.status === status) &&
+      [r.title, r.notes, r.product, r.phone]
+        .join(" ")
+        .toLowerCase()
+        .includes(search.toLowerCase()),
+  );
+  async function assign(r: Row) {
+    setBusy(true);
+    setError("");
+    try {
+      const result = await command("assignCampaignPage", { campaignId: r.id });
+      setMessage(
+        `${result.assigned || 0} contacts assigned. ${result.done ? "Audience complete." : "Select Assign next page to continue."}`,
+      );
+      state.reload();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <>
+      <Header
+        eyebrow="YOUR WORKSPACE"
+        title={spec.label}
+        description={spec.description}
+        actions={
+          <>
+            {profile?.role === "Admin" && kind === "tasks" && (
+              <button
+                className="secondary"
+                onClick={async () => {
+                  try {
+                    const r = await command("refreshOverdue", {});
+                    setMessage(
+                      `${r.processed} overdue tasks refreshed.${r.hasMore ? " Refresh again for the next batch." : ""}`,
+                    );
+                    state.reload();
+                  } catch (e) {
+                    setError((e as Error).message);
+                  }
+                }}
+              >
+                <RefreshCw size={16} />
+                Refresh overdue
+              </button>
+            )}
+            {!(kind === "campaignAssignments" && profile?.role === "Staff") && (
+              <button onClick={() => setEdit(null)}>
+                <Plus size={18} />
+                New {spec.singular.toLowerCase()}
+              </button>
+            )}
+          </>
+        }
+      />
+      <ErrorBox message={state.error || error} />
+      {message && <div className="success">{message}</div>}
+      <div className="toolbar">
+        <label className="search">
+          <Search size={18} />
+          <input
+            aria-label="Search loaded records"
+            placeholder="Search loaded records…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </label>
+        <select
+          aria-label="Filter status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        >
+          <option value="ALL">All statuses</option>
+          {spec.statuses.map((s) => (
+            <option key={s} value={s}>
+              {label(s)}
+            </option>
+          ))}
+        </select>
+        <span className="subtle">{rows.length} shown</span>
+      </div>
+      {state.loading && !state.rows.length ? (
+        <Loading />
+      ) : !rows.length ? (
+        <Empty
+          title={`No ${spec.label.toLowerCase()} to show`}
+          text="Create a record or adjust your filters to get started."
+        />
+      ) : (
+        <div className="record-list">
+          {rows.map((r) => (
+            <article className="record-card" key={r.id}>
+              <div className="record-main">
+                <div className="row-between">
+                  <Badge value={r.priority || "NORMAL"} />
+                  <small>
+                    {r.dueDate
+                      ? `${r.dueDate < today() ? "Due / overdue" : "Due"} ${r.dueDate}`
+                      : when(r.createdAt)}
+                  </small>
+                </div>
+                <h3>{r.title}</h3>
+                <p>
+                  {r.product ||
+                    r.objective ||
+                    r.notes ||
+                    "Keep the next step clear."}
+                </p>
+                <div className="record-meta">
+                  <Badge value={r.status} />
+                  {r.customerId && (
+                    <Link to={`/customers/${r.customerId}`}>
+                      View customer <ArrowUpRight size={13} />
+                    </Link>
+                  )}
+                  {r.nextFollowUp && <span>Next: {r.nextFollowUp}</span>}
+                </div>
+              </div>
+              <div className="record-actions">
+                {kind === "leads" && r.phone && (
+                  <>
+                    <a
+                      className="button secondary"
+                      href={`tel:${String(r.phone).replace(/[^+\d]/g, "")}`}
+                    >
+                      Call
+                    </a>
+                    <button
+                      className="secondary"
+                      onClick={() => setMessageRecord({ ...r, name: r.title })}
+                    >
+                      WhatsApp
+                    </button>
+                  </>
+                )}
+                {kind === "tasks" &&
+                  modules[r.sourceType] &&
+                  r.sourceType !== "tasks" && (
+                    <Link
+                      className="button secondary"
+                      to={`/work/${r.sourceType}?record=${encodeURIComponent(r.sourceId)}`}
+                    >
+                      Open original
+                    </Link>
+                  )}
+                {!(kind === "activities" && profile?.role === "Staff") && (
+                  <button className="secondary" onClick={() => setEdit(r)}>
+                    Update
+                  </button>
+                )}
+                {kind === "campaigns" &&
+                  r.status === "ACTIVE" &&
+                  !r.assignmentDone && (
+                    <button disabled={busy} onClick={() => assign(r)}>
+                      Assign next page
+                    </button>
+                  )}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+      <PageEnd state={state} />
+      {messageRecord && (
+        <Message
+          customer={messageRecord}
+          collection={null}
+          onClose={() => setMessageRecord(null)}
+        />
+      )}
+      {edit !== undefined && (
+        <RecordEditor
+          kind={kind}
+          record={edit || undefined}
+          onClose={() => setEdit(undefined)}
+          onSaved={state.reload}
+        />
+      )}
+    </>
+  );
+}

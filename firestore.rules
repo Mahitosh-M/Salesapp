@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function signedIn(){return request.auth != null;}
+  function profile(){return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;}
+  function active(){return signedIn() && profile().active == true;}
+  function admin(){return active() && profile().role == 'Admin';}
+  function staff(){return active() && profile().role == 'Staff';}
+  function own(data){return staff() && data.assignedStaffId == request.auth.uid;}
+  function bounded(){return request.query.limit != null && request.query.limit <= 100;}
+  match /users/{uid}{allow get: if signedIn() && (request.auth.uid == uid || admin());allow list: if admin() && bounded();}
+  match /staffCustomers/{id}{allow get: if admin() || (own(resource.data) && resource.data.active == true);allow list: if bounded() && (admin() || (own(resource.data) && resource.data.active == true));}
+  match /collectionSnapshots/{id}{allow get: if admin() || (own(resource.data) && resource.data.active == true);allow list: if bounded() && (admin() || (own(resource.data) && resource.data.active == true));}
+  match /staffWorkSummaries/{id}{allow get: if admin() || (staff() && resource.data.staffId == request.auth.uid);allow list: if bounded() && (admin() || (staff() && resource.data.staffId == request.auth.uid));}
+  match /staffDailyWork/{id}{allow get: if admin() || (staff() && resource.data.staffId == request.auth.uid);allow list: if bounded() && (admin() || (staff() && resource.data.staffId == request.auth.uid));}
+  match /staffTargetProgress/{id}{allow get: if admin() || (staff() && resource.data.staffId == request.auth.uid);allow list: if bounded() && (admin() || (staff() && resource.data.staffId == request.auth.uid));}
+  match /staffPerformance/{id}{allow get: if admin() || (staff() && resource.data.staffId == request.auth.uid);allow list: if bounded() && (admin() || (staff() && resource.data.staffId == request.auth.uid));}
+  match /publicState/{id}{allow read: if active() && id == 'sync';}
+  match /settings/{id}{allow get: if active() && id == 'general';}
+  match /messageTemplates/{id}{allow get: if admin() || (staff() && resource.data.status == 'APPROVED');allow list: if bounded() && (admin() || (staff() && resource.data.status == 'APPROVED'));}
+  match /{col}/{id}{
+   allow get: if col in ['leads','tasks','followUps','activities','visits','collectionPromises','customerRequirements','opportunities','reactivations','campaignAssignments','objections','competitorNotes','complaints'] && (admin() || own(resource.data));
+   allow list: if bounded() && col in ['leads','tasks','followUps','activities','visits','collectionPromises','customerRequirements','opportunities','reactivations','campaignAssignments','objections','competitorNotes','complaints'] && (admin() || own(resource.data));
+   allow get: if admin() && col in ['adminWorkSummaries','campaigns','campaignPerformance','syncState','customerAssignments','monthlyAssignments','targets','branchTargetProgress','businessTargetProgress','businessPerformance','targetCoverage','adminInvoiceTargets','adminCis_customers','adminCis_customerCreditProfiles','adminCis_customerIntelligenceSummaries','adminCis_pcBalances','adminCis_customerMonthlySnapshots','adminCis_businessMonthlySnapshots'];
+   allow list: if admin() && bounded() && col in ['adminWorkSummaries','campaigns','campaignPerformance','syncState','customerAssignments','monthlyAssignments','targets','branchTargetProgress','businessTargetProgress','businessPerformance','targetCoverage','adminInvoiceTargets','adminCis_customers','adminCis_customerCreditProfiles','adminCis_customerIntelligenceSummaries','adminCis_pcBalances','adminCis_customerMonthlySnapshots','adminCis_businessMonthlySnapshots'];
+  }
+  // All mutations go through authenticated, validated Project B callable functions.
+  // No self-assigned roles, client mirror writes, or client summary writes.
+  match /{document=**}{allow write: if false;}
+ }
+}

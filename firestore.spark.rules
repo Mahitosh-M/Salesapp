@@ -1,0 +1,163 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function signedIn(){return request.auth != null;}
+  function profile(){return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;}
+  function active(){return signedIn() && profile().active == true;}
+  function admin(){return active() && profile().role == 'Admin';}
+  function staff(){return active() && profile().role == 'Staff';}
+  function own(d){return staff() && d.assignedStaffId == request.auth.uid;}
+  function bounded(){return request.query.limit != null && request.query.limit <= 100;}
+  function identifier(s){return s is string && s.matches('^[A-Za-z0-9_.-]{1,179}$');}
+  function optionalId(s){return s == '' || identifier(s);}
+  function text(s){return s is string && s.size() <= 4000;}
+  function date(s){return s is string && s.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');}
+  function customerScope(d){return d.get('customerId','') == '' || (identifier(d.customerId) && get(/databases/$(database)/documents/staffCustomers/$(d.customerId)).data.active == true && get(/databases/$(database)/documents/staffCustomers/$(d.customerId)).data.assignedStaffId == d.assignedStaffId);}
+  function leadScope(d){return d.get('leadId','') == '' || (identifier(d.leadId) && getAfter(/databases/$(database)/documents/leads/$(d.leadId)).data.assignedStaffId == d.assignedStaffId);}
+  function campaignScope(d){return d.get('campaignId','') == '' || (identifier(d.campaignId) && identifier(d.get('customerId','')) && get(/databases/$(database)/documents/campaignAssignments/$(d.campaignId+'_'+d.customerId)).data.assignedStaffId == request.auth.uid);}
+  function base(d){return d.title is string && d.title.size() > 0 && d.title.size() <= 180 && d.priority in ['URGENT','HIGH','NORMAL','LOW'] && own(d) && d.assignedStaffName == profile().name && customerScope(d) && leadScope(d) && campaignScope(d) && d.createdAt is string && d.updatedAt is string && d.submittedAt == request.time;}
+  function created(d){return d.createdBy == request.auth.uid && d.createdOn == request.time;}
+  function unchanged(d){return own(resource.data) && d.createdBy == resource.data.get('createdBy',request.auth.uid) && d.createdAt == resource.data.createdAt && d.createdOn == resource.data.get('createdOn',request.time);}
+  function linkedTask(kind,id,d){let t=getAfter(/databases/$(database)/documents/tasks/$(kind+'_'+id)).data;return t.sourceType == kind && t.sourceId == id && t.assignedStaffId == d.assignedStaffId && t.title == d.title && t.customerId == d.get('customerId','');}
+  function taskSource(id,d){return (d.sourceType == 'ADMIN' && d.sourceId == id) || (d.sourceType in ['leads','followUps','visits','collectionPromises','customerRequirements','opportunities','reactivations','campaignAssignments','complaints'] && id == d.sourceType+'_'+d.sourceId && getAfter(/databases/$(database)/documents/$(d.sourceType)/$(d.sourceId)).data.assignedStaffId == d.assignedStaffId && getAfter(/databases/$(database)/documents/$(d.sourceType)/$(d.sourceId)).data.title == d.title);}
+  function activityFollow(id,d){return d.get('nextFollowUp','') == '' || (getAfter(/databases/$(database)/documents/followUps/$('activity_'+id)).data.assignedStaffId == d.assignedStaffId && getAfter(/databases/$(database)/documents/followUps/$('activity_'+id)).data.dueDate == d.nextFollowUp && getAfter(/databases/$(database)/documents/followUps/$('activity_'+id)).data.customerId == d.get('customerId',''));}
+  match /users/{uid} {
+   allow get: if signedIn() && (request.auth.uid == uid || admin());
+   allow list: if admin() && bounded();
+   allow create, update: if admin() && request.resource.data.keys().hasOnly(['uid','name','email','role','active','branchId','updatedAt']) && request.resource.data.uid == uid && request.resource.data.role in ['Admin','Staff'] && request.resource.data.active is bool && text(request.resource.data.name) && text(request.resource.data.email) && request.resource.data.branchId in ['SINDHANUR','MASKI'] && (uid != request.auth.uid || (request.resource.data.role == 'Admin' && request.resource.data.active == true));
+  }
+  match /staffCustomers/{id} {
+   allow get: if admin() || (own(resource.data) && resource.data.active == true);
+   allow list: if bounded() && (admin() || (own(resource.data) && resource.data.active == true));
+   allow create, update: if admin() && request.resource.data.keys().hasOnly(['customerId','name','phone','whatsapp','area','branchId','assignedStaffId','active','sourceUpdatedAt','syncedAt','lastOrderDate','lastOrderCheckedAt']);
+  }
+  match /collectionSnapshots/{id} {
+   allow get: if admin() || (own(resource.data) && resource.data.active == true);
+   allow list: if bounded() && (admin() || (own(resource.data) && resource.data.active == true));
+   allow create, update: if admin() && request.resource.data.keys().hasOnly(['customerId','name','assignedStaffId','active','outstandingAmount','overdueAmount','oldestDueDate','dueDate','amountRequiringFollowUp','financialSourceUpdatedAt','overdueSourceUpdatedAt','sourceUpdatedAt','syncedAt']);
+  }
+  match /publicState/{id}{allow get: if active() && id == 'sync';allow write: if admin() && id == 'sync';}
+  match /settings/{id}{allow get: if active() && id == 'general';allow write: if admin() && id == 'general';}
+ function valid_leads(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","contactPerson","phone","whatsapp","area","branchId","source","businessType","interest","nextFollowUp","linkedCustomerId","notes"]) && d.status in ["NEW","CONTACTED","INTERESTED","FOLLOW_UP","TRIAL_OR_NEGOTIATION","READY_FOR_CISAPP_CREATION","CONVERTED","LOST"] && (d.get('contactPerson','') == '' || (text(d.get('contactPerson','')))) && (d.get('phone','') == '' || (text(d.get('phone','')))) && (d.get('whatsapp','') == '' || (text(d.get('whatsapp','')))) && (d.get('area','') == '' || (text(d.get('area','')))) && (d.get('branchId','') == '' || d.get('branchId','') in ['SINDHANUR','MASKI']) && (d.get('source','') == '' || (text(d.get('source','')))) && (d.get('businessType','') == '' || (text(d.get('businessType','')))) && (d.get('interest','') == '' || (text(d.get('interest','')))) && (d.get('nextFollowUp','') == '' || (date(d.get('nextFollowUp','')))) && (d.get('linkedCustomerId','') == '' || (identifier(d.get('linkedCustomerId','')))) && (d.get('notes','') == '' || (text(d.get('notes','')))) && d.get('linkedCustomerId','') == '' && d.status != 'CONVERTED';}
+ match /leads/{id} {
+allow get: if admin() || (staff() && (!exists(/databases/$(database)/documents/leads/$(id)) || own(resource.data)));
+allow list: if bounded() && (admin() || own(resource.data));
+function valid(d){return base(d) && valid_leads(d) && linkedTask('leads',id,d);}
+allow create: if admin() || (valid(request.resource.data) && created(request.resource.data));
+allow update: if admin() || (valid(request.resource.data) && unchanged(request.resource.data));
+}
+ function valid_tasks(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","customerId","dueDate","notes","leadId","sourceType","sourceId"]) && d.status in ["PENDING","IN_PROGRESS","COMPLETED","SKIPPED","OVERDUE","CANCELLED"] && (d.get('customerId','') == '' || (identifier(d.get('customerId','')))) && (d.get('dueDate','') != '' && date(d.get('dueDate',''))) && (d.get('notes','') == '' || (text(d.get('notes','')))) && (d.get('leadId','') == '' || (identifier(d.get('leadId','')))) && d.sourceType is string && identifier(d.sourceId);}
+ match /tasks/{id} {
+allow get: if admin() || (staff() && (!exists(/databases/$(database)/documents/tasks/$(id)) || own(resource.data)));
+allow list: if bounded() && (admin() || own(resource.data));
+function valid(d){return base(d) && valid_tasks(d) && taskSource(id,d);}
+allow create: if admin() || (valid(request.resource.data) && created(request.resource.data));
+allow update: if admin() || (valid(request.resource.data) && unchanged(request.resource.data) && request.resource.data.sourceType == resource.data.sourceType && request.resource.data.sourceId == resource.data.sourceId);
+}
+ function valid_followUps(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","customerId","dueDate","notes","leadId","outcome","nextFollowUp"]) && d.status in ["PENDING","COMPLETED","CANCELLED"] && (d.get('customerId','') == '' || (identifier(d.get('customerId','')))) && (d.get('dueDate','') != '' && date(d.get('dueDate',''))) && (d.get('notes','') == '' || (text(d.get('notes','')))) && (d.get('leadId','') == '' || (identifier(d.get('leadId','')))) && (d.get('outcome','') == '' || (text(d.get('outcome','')) && d.get('outcome','') in ["INTERESTED","CALL_LATER","ORDERED","NOT_INTERESTED","UNREACHABLE","PRICE_ISSUE","STOCK_ISSUE","COMPETITOR","PAYMENT_ISSUE","EXISTING_STOCK_REMAINING","OTHER"])) && (d.get('nextFollowUp','') == '' || (date(d.get('nextFollowUp',''))));}
+ match /followUps/{id} {
+allow get: if admin() || (staff() && (!exists(/databases/$(database)/documents/followUps/$(id)) || own(resource.data)));
+allow list: if bounded() && (admin() || own(resource.data));
+function valid(d){return base(d) && valid_followUps(d) && linkedTask('followUps',id,d);}
+allow create: if admin() || (valid(request.resource.data) && created(request.resource.data));
+allow update: if admin() || (valid(request.resource.data) && unchanged(request.resource.data));
+}
+ function valid_activities(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","customerId","leadId","type","outcome","nextFollowUp","notes"]) && d.status in ["RECORDED"] && (d.get('customerId','') == '' || (identifier(d.get('customerId','')))) && (d.get('leadId','') == '' || (identifier(d.get('leadId','')))) && (d.get('type','') != '' && text(d.get('type','')) && d.get('type','') in ["CALL","WHATSAPP","VISIT","MEETING","COLLECTION","PRODUCT_PITCH","OFFER_DISCUSSION","LEAD_CONTACT","COMPLAINT","FOLLOW_UP"]) && (d.get('outcome','') != '' && text(d.get('outcome','')) && d.get('outcome','') in ["INTERESTED","CALL_LATER","ORDERED","NOT_INTERESTED","UNREACHABLE","PRICE_ISSUE","STOCK_ISSUE","COMPETITOR","PAYMENT_ISSUE","EXISTING_STOCK_REMAINING","OTHER"]) && (d.get('nextFollowUp','') == '' || (date(d.get('nextFollowUp','')))) && (d.get('notes','') == '' || (text(d.get('notes',''))));}
+ match /activities/{id} {
+allow get: if admin() || (staff() && (!exists(/databases/$(database)/documents/activities/$(id)) || own(resource.data)));
+allow list: if bounded() && (admin() || own(resource.data));
+function valid(d){return base(d) && valid_activities(d) && activityFollow(id,d);}
+allow create: if admin() || (valid(request.resource.data) && created(request.resource.data));
+allow update: if admin();
+}
+ function valid_visits(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","customerId","dueDate","notes","purpose","outcome","requirement","nextFollowUp"]) && d.status in ["PLANNED","COMPLETED","CANCELLED"] && (d.get('customerId','') == '' || (identifier(d.get('customerId','')))) && (d.get('dueDate','') != '' && date(d.get('dueDate',''))) && (d.get('notes','') == '' || (text(d.get('notes','')))) && (d.get('purpose','') == '' || (text(d.get('purpose','')))) && (d.get('outcome','') == '' || (text(d.get('outcome','')) && d.get('outcome','') in ["INTERESTED","CALL_LATER","ORDERED","NOT_INTERESTED","UNREACHABLE","PRICE_ISSUE","STOCK_ISSUE","COMPETITOR","PAYMENT_ISSUE","EXISTING_STOCK_REMAINING","OTHER"])) && (d.get('requirement','') == '' || (text(d.get('requirement','')))) && (d.get('nextFollowUp','') == '' || (date(d.get('nextFollowUp',''))));}
+ match /visits/{id} {
+allow get: if admin() || (staff() && (!exists(/databases/$(database)/documents/visits/$(id)) || own(resource.data)));
+allow list: if bounded() && (admin() || own(resource.data));
+function valid(d){return base(d) && valid_visits(d) && linkedTask('visits',id,d);}
+allow create: if admin() || (valid(request.resource.data) && created(request.resource.data));
+allow update: if admin() || (valid(request.resource.data) && unchanged(request.resource.data));
+}
+ function valid_collectionPromises(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","customerId","amount","promiseDate","notes"]) && d.status in ["PROMISED","PARTIAL","KEPT","MISSED","CANCELLED"] && (d.get('customerId','') != '' && identifier(d.get('customerId',''))) && (d.get('amount','') != '' && (d.get('amount','') is number && d.get('amount','') > 0 && d.get('amount','') <= 1000000000000)) && (d.get('promiseDate','') != '' && date(d.get('promiseDate',''))) && (d.get('notes','') == '' || (text(d.get('notes',''))));}
+ match /collectionPromises/{id} {
+allow get: if admin() || (staff() && (!exists(/databases/$(database)/documents/collectionPromises/$(id)) || own(resource.data)));
+allow list: if bounded() && (admin() || own(resource.data));
+function valid(d){return base(d) && valid_collectionPromises(d) && linkedTask('collectionPromises',id,d);}
+allow create: if admin() || (valid(request.resource.data) && created(request.resource.data));
+allow update: if admin() || (valid(request.resource.data) && unchanged(request.resource.data));
+}
+ function valid_customerRequirements(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","customerId","product","quantity","dueDate","notes"]) && d.status in ["OPEN","AVAILABLE","CUSTOMER_INFORMED","ORDERED","CLOSED","CANCELLED"] && (d.get('customerId','') != '' && identifier(d.get('customerId',''))) && (d.get('product','') != '' && text(d.get('product',''))) && (d.get('quantity','') == '' || (text(d.get('quantity','')))) && (d.get('dueDate','') != '' && date(d.get('dueDate',''))) && (d.get('notes','') == '' || (text(d.get('notes',''))));}
+ match /customerRequirements/{id} {
+allow get: if admin() || (staff() && (!exists(/databases/$(database)/documents/customerRequirements/$(id)) || own(resource.data)));
+allow list: if bounded() && (admin() || own(resource.data));
+function valid(d){return base(d) && valid_customerRequirements(d) && linkedTask('customerRequirements',id,d);}
+allow create: if admin() || (valid(request.resource.data) && created(request.resource.data));
+allow update: if admin() || (valid(request.resource.data) && unchanged(request.resource.data));
+}
+ function valid_opportunities(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","customerId","dueDate","notes","type","recommendedAction","outcome"]) && d.status in ["OPEN","CONTACTED","INTERESTED","WON","LOST","CANCELLED"] && (d.get('customerId','') == '' || (identifier(d.get('customerId','')))) && (d.get('dueDate','') != '' && date(d.get('dueDate',''))) && (d.get('notes','') == '' || (text(d.get('notes','')))) && (d.get('type','') != '' && text(d.get('type','')) && d.get('type','') in ["REORDER_DUE","CUSTOMER_INACTIVE","REACTIVATION","SALES_DECLINE","CROSS_SELL","UPSELL","NEW_PRODUCT","PROMOTIONAL_OFFER","COLLECTION_BEFORE_ORDER","CUSTOMER_REQUIREMENT"]) && (d.get('recommendedAction','') == '' || (text(d.get('recommendedAction','')))) && (d.get('outcome','') == '' || (text(d.get('outcome','')) && d.get('outcome','') in ["INTERESTED","CALL_LATER","ORDERED","NOT_INTERESTED","UNREACHABLE","PRICE_ISSUE","STOCK_ISSUE","COMPETITOR","PAYMENT_ISSUE","EXISTING_STOCK_REMAINING","OTHER"]));}
+ match /opportunities/{id} {
+allow get: if admin() || (staff() && (!exists(/databases/$(database)/documents/opportunities/$(id)) || own(resource.data)));
+allow list: if bounded() && (admin() || own(resource.data));
+function valid(d){return base(d) && valid_opportunities(d) && linkedTask('opportunities',id,d);}
+allow create: if admin() || (valid(request.resource.data) && created(request.resource.data));
+allow update: if admin() || (valid(request.resource.data) && unchanged(request.resource.data));
+}
+ function valid_reactivations(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","customerId","dueDate","notes"]) && d.status in ["INACTIVE","ASSIGNED","CONTACTED","INTERESTED","REACTIVATED","NOT_INTERESTED"] && (d.get('customerId','') == '' || (identifier(d.get('customerId','')))) && (d.get('dueDate','') != '' && date(d.get('dueDate',''))) && (d.get('notes','') == '' || (text(d.get('notes',''))));}
+ match /reactivations/{id} {
+allow get: if admin() || (staff() && (!exists(/databases/$(database)/documents/reactivations/$(id)) || own(resource.data)));
+allow list: if bounded() && (admin() || own(resource.data));
+function valid(d){return base(d) && valid_reactivations(d) && linkedTask('reactivations',id,d);}
+allow create: if admin() || (valid(request.resource.data) && created(request.resource.data));
+allow update: if admin() || (valid(request.resource.data) && unchanged(request.resource.data));
+}
+ function valid_campaigns(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","objective","description","segment","segmentValue","startDate","endDate","offerReference","notes"]) && d.status in ["DRAFT","ACTIVE","PAUSED","COMPLETED","CANCELLED"] && (d.get('objective','') == '' || (text(d.get('objective','')))) && (d.get('description','') == '' || (text(d.get('description','')))) && (d.get('segment','') != '' && text(d.get('segment','')) && d.get('segment','') in ["ALL_ASSIGNED","COLLECTION","AREA","BRANCH","STAFF","OPEN_REQUIREMENTS","DORMANT","GOOD_PAYMENT","REORDER"]) && (d.get('segmentValue','') == '' || (text(d.get('segmentValue','')))) && (d.get('startDate','') != '' && date(d.get('startDate',''))) && (d.get('endDate','') != '' && date(d.get('endDate',''))) && (d.get('offerReference','') == '' || (text(d.get('offerReference','')))) && (d.get('notes','') == '' || (text(d.get('notes',''))));}
+ match /campaigns/{id} {
+allow get: if admin();allow list: if admin() && bounded();
+allow create, update: if admin();
+}
+ function valid_campaignAssignments(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","customerId","dueDate","notes","campaignId","nextFollowUp"]) && d.status in ["PENDING","CONTACTED","INTERESTED","NOT_INTERESTED","CALL_LATER","ORDERED","ALREADY_STOCKED","PRICE_ISSUE","COMPETITOR","OTHER"] && (d.get('customerId','') == '' || (identifier(d.get('customerId','')))) && (d.get('dueDate','') != '' && date(d.get('dueDate',''))) && (d.get('notes','') == '' || (text(d.get('notes','')))) && (d.get('campaignId','') != '' && text(d.get('campaignId',''))) && (d.get('nextFollowUp','') == '' || (date(d.get('nextFollowUp',''))));}
+ match /campaignAssignments/{id} {
+allow get: if admin() || (staff() && (!exists(/databases/$(database)/documents/campaignAssignments/$(id)) || own(resource.data)));
+allow list: if bounded() && (admin() || own(resource.data));
+function valid(d){return base(d) && valid_campaignAssignments(d) && linkedTask('campaignAssignments',id,d);}
+allow create: if admin();
+allow update: if admin() || (valid(request.resource.data) && unchanged(request.resource.data) && request.resource.data.customerId == resource.data.customerId && request.resource.data.campaignId == resource.data.campaignId);
+}
+ function valid_objections(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","customerId","leadId","reason","campaignId","notes"]) && d.status in ["OPEN","RESOLVED","LOST"] && (d.get('customerId','') == '' || (identifier(d.get('customerId','')))) && (d.get('leadId','') == '' || (identifier(d.get('leadId','')))) && (d.get('reason','') != '' && text(d.get('reason','')) && d.get('reason','') in ["PRICE","CREDIT","COMPETITOR","NO_DEMAND","EXCESS_STOCK","DELIVERY","PRODUCT_UNAVAILABLE","SERVICE","PAYMENT_ISSUE","OTHER"]) && (d.get('campaignId','') == '' || (text(d.get('campaignId','')))) && (d.get('notes','') == '' || (text(d.get('notes',''))));}
+ match /objections/{id} {
+allow get: if admin() || (staff() && (!exists(/databases/$(database)/documents/objections/$(id)) || own(resource.data)));
+allow list: if bounded() && (admin() || own(resource.data));
+function valid(d){return base(d) && valid_objections(d);}
+allow create: if admin() || (valid(request.resource.data) && created(request.resource.data));
+allow update: if admin() || (valid(request.resource.data) && unchanged(request.resource.data));
+}
+ function valid_competitorNotes(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","customerId","competitor","product","scheme","comment","notes"]) && d.status in ["RECORDED"] && (d.get('customerId','') == '' || (identifier(d.get('customerId','')))) && (d.get('competitor','') != '' && text(d.get('competitor',''))) && (d.get('product','') == '' || (text(d.get('product','')))) && (d.get('scheme','') == '' || (text(d.get('scheme','')))) && (d.get('comment','') == '' || (text(d.get('comment','')))) && (d.get('notes','') == '' || (text(d.get('notes',''))));}
+ match /competitorNotes/{id} {
+allow get: if admin() || (staff() && (!exists(/databases/$(database)/documents/competitorNotes/$(id)) || own(resource.data)));
+allow list: if bounded() && (admin() || own(resource.data));
+function valid(d){return base(d) && valid_competitorNotes(d);}
+allow create: if admin() || (valid(request.resource.data) && created(request.resource.data));
+allow update: if admin() || (valid(request.resource.data) && unchanged(request.resource.data));
+}
+ function valid_complaints(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","customerId","dueDate","notes","type"]) && d.status in ["OPEN","IN_PROGRESS","RESOLVED","CANCELLED"] && (d.get('customerId','') == '' || (identifier(d.get('customerId','')))) && (d.get('dueDate','') != '' && date(d.get('dueDate',''))) && (d.get('notes','') == '' || (text(d.get('notes','')))) && (d.get('type','') != '' && text(d.get('type','')) && d.get('type','') in ["DELIVERY","SHORTAGE","BILLING","DAMAGED_GOODS","WRONG_RATE","PRODUCT","SERVICE","OTHER"]);}
+ match /complaints/{id} {
+allow get: if admin() || (staff() && (!exists(/databases/$(database)/documents/complaints/$(id)) || own(resource.data)));
+allow list: if bounded() && (admin() || own(resource.data));
+function valid(d){return base(d) && valid_complaints(d) && linkedTask('complaints',id,d);}
+allow create: if admin() || (valid(request.resource.data) && created(request.resource.data));
+allow update: if admin() || (valid(request.resource.data) && unchanged(request.resource.data));
+}
+ function valid_messageTemplates(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","category","body"]) && d.status in ["DRAFT","APPROVED","ARCHIVED"] && (d.get('category','') != '' && text(d.get('category','')) && d.get('category','') in ["COLLECTION_REMINDER","REORDER_FOLLOW_UP","PRODUCT_INTRODUCTION","OFFER","DORMANT_CUSTOMER","LEAD_INTRODUCTION","CUSTOMER_REQUIREMENT"]) && (d.get('body','') != '' && text(d.get('body','')));}
+ match /messageTemplates/{id} {
+allow get: if admin() || (staff() && resource.data.status == 'APPROVED');allow list: if bounded() && (admin() || (staff() && resource.data.status == 'APPROVED'));
+allow create, update: if admin();
+}
+match /{col}/{id} {
+ allow get: if admin() && col in ['customerOrderDates','syncDirtyCustomers','syncState','customerAssignments','monthlyAssignments','targets','branchTargetProgress','businessTargetProgress','targetCoverage','adminInvoiceTargets','adminCis_customers','adminCis_customerCreditProfiles','adminCis_customerIntelligenceSummaries','adminCis_pcBalances','adminCis_customerMonthlySnapshots','adminCis_businessMonthlySnapshots'];
+ allow list: if admin() && bounded() && col in ['customerOrderDates','syncDirtyCustomers','syncState','customerAssignments','monthlyAssignments','targets','branchTargetProgress','businessTargetProgress','targetCoverage','adminInvoiceTargets','adminCis_customers','adminCis_customerCreditProfiles','adminCis_customerIntelligenceSummaries','adminCis_pcBalances','adminCis_customerMonthlySnapshots','adminCis_businessMonthlySnapshots'];
+ allow write: if admin() && col in ['customerOrderDates','syncDirtyCustomers','syncState','customerAssignments','monthlyAssignments','targets','branchTargetProgress','businessTargetProgress','targetCoverage','adminInvoiceTargets','adminCis_customers','adminCis_customerCreditProfiles','adminCis_customerIntelligenceSummaries','adminCis_pcBalances','adminCis_customerMonthlySnapshots','adminCis_businessMonthlySnapshots'];
+}
+match /staffTargetProgress/{id}{allow get: if admin() || (staff() && resource.data.staffId == request.auth.uid);allow list: if bounded() && (admin() || (staff() && resource.data.staffId == request.auth.uid));allow write: if admin();}
+// Performance/work summaries are computed from authorized records. Nobody writes counters.
+match /{document=**}{allow read, write: if false;}
+}}

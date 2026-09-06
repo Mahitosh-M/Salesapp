@@ -1,0 +1,36 @@
+{
+  "name": "salesapp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "build:functions": "npm --prefix functions run build",
+    "test": "vitest run",
+    "test:rules": "firebase emulators:exec --project demo-salesapp --only firestore \"vitest run tests/firestore.rules.test.ts\"",
+    "test:integration": "firebase emulators:exec --project demo-salesapp --only firestore,auth \"vitest run tests/integration.test.ts\"",
+    "preview": "vite preview --host 127.0.0.1",
+    "deploy:spark": "node scripts/deploy-spark.cjs",
+    "test:spark": "vitest run tests/spark.rules.test.ts"
+  },
+  "dependencies": {
+    "firebase": "^12.15.0",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.18.3"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.1",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.4",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.6.2",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.0"
+  }
+}
