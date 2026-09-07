@@ -8,7 +8,7 @@ export function followUpDueDate(lastOrderDate: unknown, asOf: string) {
   if (lastOrderDate === null || lastOrderDate === "") return asOf;
   if (!validDate(lastOrderDate)) return null;
   const date = new Date(`${lastOrderDate}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + 15);
+  date.setUTCDate(date.getUTCDate() + 10);
   return date.toISOString().slice(0, 10);
 }
 export function needsAutomaticFollowUp(lastOrderDate: unknown, asOf: string) {
@@ -18,5 +18,5 @@ export function needsAutomaticFollowUp(lastOrderDate: unknown, asOf: string) {
 export async function automaticFollowUpId(customerId: string, lastOrderDate: unknown) {
   const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(customerId));
   const customerHash = Array.from(new Uint8Array(hash)).slice(0, 12).map((b) => b.toString(16).padStart(2, "0")).join("");
-  return `auto15_${validDate(lastOrderDate) ? lastOrderDate : "never"}_${customerHash}`;
+  return `auto10_${validDate(lastOrderDate) ? lastOrderDate : "never"}_${customerHash}`;
 }

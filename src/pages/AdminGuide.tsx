@@ -8,7 +8,7 @@ const pages = [
   ["Leads", "People or businesses that may become customers later.", "Give every lead an owner and a next action. Create the real customer in CISapp when the lead becomes a customer."],
   ["Tasks", "Small jobs that somebody must finish.", "Write a clear title, choose the Staff owner, choose a due date, and check that the Staff member completes it."],
   ["Collections", "Customers with money still outstanding. A zero balance is hidden.", "Staff can follow up or save a promise. Enter the actual payment only in CISapp, then sync again."],
-  ["Follow-ups", "Calls or messages that must happen on a date.", "Salesapp creates one automatically when an assigned customer has no order for 15 days. Staff can also create one manually."],
+  ["Follow-ups", "Calls or messages that must happen on a date.", "Salesapp creates one automatically when an assigned customer has no order for 10 days. Staff can also create one manually."],
   ["Visits", "A plan to meet a customer.", "Salesapp creates one automatically when an assigned customer has no order for 10 days. Staff can also plan a visit manually."],
   ["Opportunities", "A possible sale, reorder, or extra product sale.", "Give it an owner, action, and due date. Close it with the real result."],
   ["Requirements", "Something a customer has asked for.", "Staff records what is needed and updates it when stock is available, ordered, or resolved."],
@@ -45,7 +45,7 @@ const dailyAdminSteps = [
   ["2. Open Overview", "Look for overdue work, work due today, collection needs, and target progress. A large or red number means somebody needs help."],
   ["3. Check unassigned customers", "Open Customers. Make sure every active customer has the correct Staff owner. No owner means no Staff member can receive that customer’s automatic visit or follow-up."],
   ["4. Check Collections", "Only balances above zero appear. Ask the owner to contact important or overdue customers. Payments are recorded in CISapp, then copied by the next sync."],
-  ["5. Check Follow-ups and Visits", "Look for overdue items and customers waiting too long. A visit appears after 10 days without an order. A follow-up appears after 15 days without an order, after sync has checked the last order."],
+  ["5. Check Follow-ups and Visits", "Look for overdue items and customers waiting too long. A visit and follow-up appear after 10 days without an order, after sync has checked the last order."],
   ["6. Give clear new work", "Create or reassign a task only when needed. Choose one owner, a useful title, the right priority, and a real due date."],
   ["7. Check Performance", "See what each Staff member completed and what results they recorded. Speak to the Staff member when work stays open or overdue."],
   ["8. End the day", "Check Overview again. Confirm urgent work is completed or has a clear next date. Sync once more if invoices or payments changed in CISapp during the day."],
@@ -83,16 +83,16 @@ export default function AdminGuide() {
         <div className="guide-card">
           <UserCog size={20} />
           <p>When Admin assigns a customer or task, it appears in that Staff member’s Salesapp. Other Staff members cannot see or change it.</p>
-          <p>After a successful sync, outstanding balances above zero appear in Collections. Last-order dates are checked. Assigned customers can then receive an automatic Visit after 10 days and an automatic Follow-up after 15 days.</p>
+          <p>After a successful sync, outstanding balances above zero appear in Collections. Last-order dates are checked. Assigned customers can then receive an automatic Visit and Follow-up after 10 days.</p>
           <p>If nothing appears, first check that the customer has a branch, the Staff account has the same branch, the customer has an owner, and CISapp Sync says SUCCESS.</p>
         </div>
         <Steps items={staffSteps} />
       </Panel>
       <Panel title="Example 1: customer has not ordered">
         <div className="guide-card">
-          <Users size={20} /><h3>Ravi Medical has not ordered for 15 days</h3>
+          <Users size={20} /><h3>Ravi Medical has not ordered for 10 days</h3>
           <p><b>Admin:</b> In CISapp, Ravi Medical has branch MASKI. In Salesapp, Staff member Asha also has branch MASKI. Admin runs Sync Now and waits for SUCCESS.</p>
-          <p><b>Salesapp:</b> Ravi Medical is assigned to Asha. After 10 days without an order, a Visit can appear. After 15 days, a pending Follow-up appears for Asha.</p>
+          <p><b>Salesapp:</b> Ravi Medical is assigned to Asha. After 10 days without an order, a Visit and a pending Follow-up appear for Asha.</p>
           <p><b>Staff:</b> Asha opens Today or Follow-ups, calls Ravi Medical, chooses the true outcome, writes “Call again on Friday,” enters Friday as Next follow-up, and completes today’s follow-up.</p>
           <p><b>Result:</b> Today’s work closes and Friday’s follow-up appears. Admin can see this progress in Overview and Performance.</p>
         </div>

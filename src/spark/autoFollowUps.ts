@@ -23,7 +23,7 @@ export async function generateAutomaticFollowUps(p: Profile, cursor?: string) {
     do {
       const page = await (last ? pending.startAfter(last) : pending).get();
       for (const followUp of page.docs) {
-        if (!followUp.id.startsWith("auto15_") || followUp.id === expected) continue;
+        if (!/^auto(?:10|15)_/.test(followUp.id) || followUp.id === expected) continue;
         await saveRecord(p, "followUps", followUp.id, {
           ...followUpInput(followUp.data()),
           assignedStaffId: customer.assignedStaffId,
