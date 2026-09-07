@@ -7,6 +7,7 @@ import {
   ArrowUpRight,
   Search,
   Plus,
+  UserRound,
 } from "lucide-react";
 import { useAuth, useRows, useDocument } from "../hooks";
 import {
@@ -32,7 +33,14 @@ import {
 } from "../../shared/schema";
 export default function Customers() {
   const state = useRows("staffCustomers");
+  const { profile } = useAuth();
   const [search, setSearch] = useState("");
+  const visibleCustomers = state.rows.filter((r) =>
+    [r.name, r.area, r.phone]
+      .join(" ")
+      .toLowerCase()
+      .includes(search.toLowerCase()),
+  );
   return (
     <>
       <Header
@@ -57,38 +65,17 @@ export default function Customers() {
         <Loading />
       ) : (
         <div className="customer-grid">
-          {state.rows
-            .filter((r) =>
-              [r.name, r.area, r.phone]
-                .join(" ")
-                .toLowerCase()
-                .includes(search.toLowerCase()),
-            )
-            .map((c) => (
-              <Link
-                className="customer-card"
-                key={c.id}
-                to={`/customers/${c.id}`}
-              >
-                <div className="row-between">
-                  <div className="avatar">
-                    {c.name.slice(0, 2).toUpperCase()}
-                  </div>
-                  <ArrowUpRight size={20} />
-                </div>
-                <h3>{c.name}</h3>
-                <p>
-                  <MapPin size={14} />
-                  {c.area || "Area not set"}
-                </p>
-                <div className="customer-footer">
-                  <span>{c.phone || "No phone number"}</span>
-                  <span className="dot-label">
-                    {c.active ? "Active" : "Source unavailable"}
-                  </span>
-                </div>
-              </Link>
-            ))}
+          {profile?.role === "Admin" ? (
+            <AdminCustomerCards customers={visibleCustomers} />
+          ) : (
+            visibleCustomers.map((customer) => (
+              <CustomerCard
+                key={customer.id}
+                customer={customer}
+                assignedStaffName={customer.assignedStaffId === profile?.uid ? profile?.name || "Assigned Staff" : "Unassigned"}
+              />
+            ))
+          )}
         </div>
       )}
       {!state.loading && !state.rows.length && (
@@ -101,6 +88,37 @@ export default function Customers() {
     </>
   );
 }
+
+function AdminCustomerCards({ customers }: { customers: Row[] }) {
+  const users = useRows("users");
+  const staffNames = new Map(users.rows.map((user) => [user.id, user.name]));
+  return customers.map((customer) => (
+    <CustomerCard
+      key={customer.id}
+      customer={customer}
+      assignedStaffName={customer.assignedStaffId ? staffNames.get(customer.assignedStaffId) || "Staff account unavailable" : "Unassigned"}
+    />
+  ));
+}
+
+function CustomerCard({ customer, assignedStaffName }: { customer: Row; assignedStaffName: string }) {
+  return (
+    <Link className="customer-card" to={`/customers/${customer.id}`}>
+      <div className="row-between">
+        <div className="avatar">{customer.name.slice(0, 2).toUpperCase()}</div>
+        <ArrowUpRight size={20} />
+      </div>
+      <h3>{customer.name}</h3>
+      <p><MapPin size={14} />{customer.area || "Area not set"}</p>
+      <p><UserRound size={14} /><b>Assigned Staff:</b> {assignedStaffName}</p>
+      <div className="customer-footer">
+        <span>{customer.phone || "No phone number"}</span>
+        <span className="dot-label">{customer.active ? "Active" : "Source unavailable"}</span>
+      </div>
+    </Link>
+  );
+}
+
 export function CustomerDetail() {
   const { id = "" } = useParams();
   const { profile } = useAuth();
