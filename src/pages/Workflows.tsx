@@ -150,7 +150,7 @@ function Workflow({ kind }: { kind: string }) {
                 </div>
                 <h3>{r.title}</h3>
                 {kind === "collectionPromises" && r.status === "UNREACHABLE" && <small>DAYS UNREACHABLE: {r.unreachableDays || 1}</small>}
-                {kind === "followUps" && r.customerId && (() => { const c = customers.rows.find((x) => x.id === r.customerId); const days = c?.lastOrderDate ? Math.max(0, Math.floor((Date.parse(today()+"T00:00:00Z") - Date.parse(String(c.lastOrderDate)+"T00:00:00Z"))/86400000)) : null; return <small>Last order: {days === null ? "unknown" : `${days} days`}{r.unreachableDays ? ` ? DAYS UNREACHABLE: ${r.unreachableDays}` : ""}</small>; })()}
+                {kind === "followUps" && r.customerId && (() => { const c = customers.rows.find((x) => x.id === r.customerId); const days = c?.lastOrderDate ? Math.max(0, Math.floor((Date.parse(today()+"T00:00:00Z") - Date.parse(String(c.lastOrderDate)+"T00:00:00Z"))/86400000)) : null; return <small className="last-order-highlight">Last order: {days === null ? "unknown" : `${days} days`}{r.unreachableDays ? ` ? DAYS UNREACHABLE: ${r.unreachableDays}` : ""}</small>; })()}
                 <p>
                   {kind === "followUps"
                     ? (r.notes && !String(r.notes).startsWith("Automatically created") ? r.notes : "")

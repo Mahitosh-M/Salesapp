@@ -2279,3 +2279,5 @@ input:disabled,select:disabled,textarea:disabled { background:#eef2f6; color:#5e
 .followup-card.status-unreachable { border-left-color: #ef4444; background: #fff7f7; }
 .followup-card.status-promised { border-left-color: #8b5cf6; background: #faf5ff; }
 .followup-card.status-paid, .followup-card.status-completed { border-left-color: #16a34a; background: #f0fdf4; }
+
+.last-order-highlight { font-size: 1.08rem; font-weight: 900; color: #073b66; background: #bae6fd; border: 1px solid #38bdf8; padding: 6px 10px; border-radius: 7px; display: inline-block; letter-spacing: .01em; }
