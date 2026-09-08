@@ -166,8 +166,8 @@ export const modules: Record<string, Module> = {
     label: "Payment promises",
     singular: "Payment promise",
     description: "Track commitments. Actual payments are entered in CISapp.",
-    statuses: ["PROMISED", "PARTIAL", "KEPT", "MISSED", "CANCELLED"],
-    closed: ["KEPT", "CANCELLED"],
+    statuses: ["UNREACHABLE", "PROMISED", "PAID"],
+    closed: ["PAID"],
     task: true,
     fields: [
       field("customerId", "Customer", "customer", true),

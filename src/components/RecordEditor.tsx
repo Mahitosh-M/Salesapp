@@ -200,7 +200,7 @@ export function RecordEditor({
           )}
           {spec.fields
             .filter(
-              (f) => (f.key !== "linkedCustomerId" || profile?.role === "Admin") && !(adminAssigned && kind === "tasks" && (f.key === "customerId" || f.key === "leadId")),
+              (f) => (f.key !== "linkedCustomerId" || profile?.role === "Admin") && !(adminAssigned && kind === "tasks" && (f.key === "customerId" || f.key === "leadId")) && !(kind === "collectionPromises" && form.status !== "PROMISED" && (f.key === "amount" || f.key === "promiseDate")),
             )
             .map((f) => (
               <label

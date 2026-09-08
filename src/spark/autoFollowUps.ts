@@ -47,9 +47,7 @@ export async function generateAutomaticFollowUps(p: Profile, cursor?: string) {
       dueDate,
       outcome: "",
       nextFollowUp: "",
-      notes: customer.lastOrderDate
-        ? `Automatically created: no normal business order since ${customer.lastOrderDate}. Source checked ${customer.lastOrderCheckedAt}.`
-        : `Automatically created: no normal business order found. Source checked ${customer.lastOrderCheckedAt}.`,
+      notes: "",
     }, true);
     if (!result.alreadyExists) changed++;
   }

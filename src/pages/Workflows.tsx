@@ -25,6 +25,7 @@ function Workflow({ kind }: { kind: string }) {
   const spec = modules[kind];
   const { profile } = useAuth();
   const state = useRows(kind);
+  const customers = useRows("staffCustomers", [["active", "==", true]]);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("ALL");
   const [edit, setEdit] = useState<Row | null | undefined>();
@@ -44,6 +45,7 @@ function Workflow({ kind }: { kind: string }) {
   const rows = state.rows.filter(
     (r) =>
       (status === "ALL" || r.status === status) &&
+      !(kind === "collectionPromises" && profile?.role === "Staff" && r.status === "PAID") &&
       [r.title, r.notes, r.product, r.phone]
         .join(" ")
         .toLowerCase()
@@ -147,11 +149,11 @@ function Workflow({ kind }: { kind: string }) {
                   </small>
                 </div>
                 <h3>{r.title}</h3>
+                {kind === "followUps" && r.customerId && (() => { const c = customers.rows.find((x) => x.id === r.customerId); const days = c?.lastOrderDate ? Math.max(0, Math.floor((Date.parse(today()+"T00:00:00Z") - Date.parse(String(c.lastOrderDate)+"T00:00:00Z"))/86400000)) : null; return <small>Last order: {days === null ? "unknown" : `${days} days`}{r.unreachableDays ? ` ? DAYS UNREACHABLE: ${r.unreachableDays}` : ""}</small>; })()}
                 <p>
-                  {r.product ||
-                    r.objective ||
-                    r.notes ||
-                    "Keep the next step clear."}
+                  {kind === "tasks" && String(r.title || "").startsWith("Collect ")
+                    ? `Combined amount to collect: ${String(r.notes || "").match(/Combined unpaid amount ([0-9.]+)/)?.[1] || "check Collections"}`
+                    : r.product || r.objective || r.notes || "Keep the next step clear."}
                 </p>
                 <div className="record-meta">
                   <Badge value={r.status} />
