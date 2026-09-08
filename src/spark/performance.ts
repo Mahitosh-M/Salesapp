@@ -1,4 +1,4 @@
-import { today, type Data } from "../../shared/schema";
+﻿import { today, type Data } from "../../shared/schema";
 export function metrics(kind: string, d: Data | null): Record<string, number> {
   if (!d) return {};
   const done = d.status;
@@ -52,7 +52,7 @@ export function metrics(kind: string, d: Data | null): Record<string, number> {
   }
   if (kind === "collectionPromises") {
     m.promises = 1;
-    m.promisesKept = done === "KEPT" ? 1 : 0;
+    m.promisesKept = done === "PAID" ? 1 : 0;
     m.promisesMissed = done === "MISSED" ? 1 : 0;
   }
   if (kind === "objections") {
@@ -87,3 +87,4 @@ export function taskFromSource(kind: string, id: string, d: Data): Data {
     updatedAt: d.updatedAt,
   };
 }
+
