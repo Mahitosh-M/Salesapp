@@ -8,6 +8,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 const config = {
   apiKey: "AIzaSyATEp0aDCh1vLcI21KB3Nphy5Rygy7_CMU",
   authDomain: "cisapp-236ab.firebaseapp.com",
@@ -18,6 +19,8 @@ const app =
   getApps().find((a) => a.name === "cisapp-sync-auth") ||
   initializeApp(config, "cisapp-sync-auth");
 const cisAuth = getAuth(app);
+export const cisDb = getFirestore(app);
+export { cisAuth };
 let readyPromise: Promise<void> | null = null;
 
 async function ready() {

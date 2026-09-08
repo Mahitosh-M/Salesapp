@@ -3,6 +3,7 @@ import { actor, salesDb, salesAdminAuth, requireId, FieldPath } from "./db";
 import { saveRecord, markOverduePage } from "./records";
 import { assignUnassignedCustomersForStaff, refreshCustomer, syncStep } from "./sync";
 import { rebuildTargets } from "./targets";
+import { refreshCollectionScheduleForCustomer } from "./collections";
 import { branchIds, today, type Data } from "../../shared/schema";
 const onCall = (fn: (request: { data: Data }) => Promise<any>) => fn;
 export const saveSalesRecord = onCall(async (request) => {
@@ -17,6 +18,23 @@ export const synchronizeCisapp = onCall(async (request) => {
     request.data.mode,
     request.data.month,
   );
+});
+export const syncCriticalCisapp = onCall(async (request) => {
+  await actor(request, true);
+  const kind = request.data.kind === "payments" ? "payments" : request.data.kind === "invoices" ? "invoices" : "";
+  const id = requireId(request.data.id);
+  const payload = request.data.payload;
+  if (!kind || !payload || typeof payload !== "object") throw new HttpsError("invalid-argument", "Invalid critical CISapp record");
+  await salesDb.doc(`adminCis_${kind}/${id}`).set({ payload, fingerprint: "realtime", checkedAt: new Date().toISOString() }, { merge: true });
+  const customerId = typeof payload.customerId === "string" ? payload.customerId : "";
+  if (customerId) {
+    if (kind === "invoices") {
+      const stored = await import("./orderAttribution").then((m) => m.storeInvoiceOrder(id, payload, new Date().toISOString()));
+      if (stored?.lastOrderChanged) await refreshCustomer(customerId);
+    }
+    await refreshCollectionScheduleForCustomer(customerId);
+  }
+  return { status: "SUCCESS", kind, id, customerId };
 });
 export const saveUser = onCall(async (request) => {
   const p = await actor(request, true);

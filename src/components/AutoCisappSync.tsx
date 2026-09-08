@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle2, RefreshCw, Unplug } from "lucide-react";
-import { useDocument } from "../hooks";
+import { onSnapshot, collection, query, where } from "firebase/firestore";
+import { cisAuth, cisDb } from "../services/cisappSession";
 import { command, clearCache, readOne } from "../services/sales";
 import { today, type Data } from "../../shared/schema";
 
@@ -41,6 +42,24 @@ export function AutoCisappSync() {
     };
     const wake=()=>void run();void run();const timer=setInterval(wake,60000);window.addEventListener("focus",wake);
     return()=>{stopped=true;clearInterval(timer);window.removeEventListener("focus",wake);};
+  }, []);
+
+  useEffect(() => {
+    let stopped = false;
+    let invoiceStop: (() => void) | undefined;
+    let paymentStop: (() => void) | undefined;
+    const startCriticalListeners = async () => {
+      const session = await import("../services/cisappSession");
+      if (!(await session.isConnected()) || !cisAuth.currentUser) return;
+      const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+      const watch = (kind: "invoices" | "payments") => onSnapshot(
+        query(collection(cisDb, kind), where("updatedAt", ">=", since)),
+        (snap) => { for (const change of snap.docChanges()) if (change.type !== "removed") void command("syncCriticalCisapp", { kind, id: change.doc.id, payload: change.doc.data() }); },
+      );
+      if (!stopped) { invoiceStop = watch("invoices"); paymentStop = watch("payments"); }
+    };
+    void startCriticalListeners();
+    return () => { stopped = true; invoiceStop?.(); paymentStop?.(); };
   }, []);
 
   if (status === "checking") return null;
