@@ -27,7 +27,7 @@ service cloud.firestore {
   match /users/{uid} {
    allow get: if signedIn() && (request.auth.uid == uid || admin() || (branchRecord(resource.data) && resource.data.role == 'Staff'));
    allow list: if bounded() && (admin() || (branchRecord(resource.data) && resource.data.role == 'Staff'));
-   allow create, update: if admin() && request.resource.data.keys().hasOnly(['uid','name','email','role','active','branchId','updatedAt']) && request.resource.data.uid == uid && request.resource.data.role in ['Admin','Manager','Staff'] && request.resource.data.active is bool && text(request.resource.data.name) && text(request.resource.data.email) && request.resource.data.branchId in ['SINDHANUR','MASKI'] && (uid != request.auth.uid || (request.resource.data.role == 'Admin' && request.resource.data.active == true));
+   allow create, update: if admin() && request.resource.data.keys().hasOnly(['uid','name','email','role','active','branchId','cisDirectoryToken','updatedAt']) && request.resource.data.uid == uid && request.resource.data.role in ['Admin','Manager','Staff'] && request.resource.data.active is bool && text(request.resource.data.name) && text(request.resource.data.email) && request.resource.data.branchId in ['SINDHANUR','MASKI'] && (uid != request.auth.uid || (request.resource.data.role == 'Admin' && request.resource.data.active == true));
   }
   match /staffCustomers/{id} {
    allow get: if admin() || branchRecord(resource.data) || (own(resource.data) && resource.data.active == true);
@@ -172,6 +172,7 @@ match /{col}/{id} {
 }
 match /staffTargetProgress/{id}{allow get: if admin() || (staff() && resource.data.staffId == request.auth.uid);allow list: if bounded() && (admin() || (staff() && resource.data.staffId == request.auth.uid));allow write: if admin();}
 match /cisStaffDirectory/{branch}/staff/{token}{allow get, list: if true; allow write: if admin();}
+match /cisStaffDirectoryMap/{token}{allow get, list, write: if admin();}
 match /staffIncentiveProgress/{id}{allow get: if admin() || (staff() && resource.data.staffId == request.auth.uid);allow list: if bounded() && (admin() || (staff() && resource.data.staffId == request.auth.uid));allow write: if admin();}
 match /customerOrderSignals/{customerId} {
  function signalSource(d){return d.sourceType in ['activities','followUps','visits','opportunities','campaignAssignments'] && getAfter(/databases/$(database)/documents/$(d.sourceType)/$(d.sourceId)).data.assignedStaffId == request.auth.uid && getAfter(/databases/$(database)/documents/$(d.sourceType)/$(d.sourceId)).data.customerId == customerId && (getAfter(/databases/$(database)/documents/$(d.sourceType)/$(d.sourceId)).data.get('outcome','') == 'ORDERED' || (d.sourceType == 'campaignAssignments' && getAfter(/databases/$(database)/documents/campaignAssignments/$(d.sourceId)).data.status == 'ORDERED'));}
