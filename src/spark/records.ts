@@ -165,6 +165,16 @@ export async function saveRecord(
       !(owner.data()?.role === "Staff" || d.assignedStaffId === p.uid) ||
       (before && (before.branchId !== p.branchId || before.sourceType !== "ADMIN"))
     )) throw new HttpsError("permission-denied", "Managers can assign tasks only inside their branch");
+    if (kind === "collectionPromises" && d.status === "UNREACHABLE") {
+      const start = before?.unreachableSince || today();
+      d.unreachableSince = start;
+      d.unreachableDays = Math.max(1, Math.floor((Date.parse(today()+"T00:00:00Z") - Date.parse(String(start)+"T00:00:00Z"))/86400000) + 1);
+      d.promiseDate = new Date(Date.parse(today()+"T00:00:00Z") + 86400000).toISOString().slice(0, 10);
+      d.amount = "";
+    } else if (kind === "collectionPromises") {
+      d.unreachableSince = "";
+      d.unreachableDays = "";
+    }
     if (kind === "followUps" && d.outcome === "UNREACHABLE") {
       const start = before?.unreachableSince || today();
       d.unreachableSince = start;
