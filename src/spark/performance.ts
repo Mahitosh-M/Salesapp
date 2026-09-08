@@ -12,7 +12,7 @@ export function metrics(kind: string, d: Data | null): Record<string, number> {
   }
   if (kind === "tasks") {
     m.tasks = 1;
-    m.tasksCompleted = done === "COMPLETED" ? 1 : 0;
+    m.tasksCompleted = ["COMPLETED", "PAID"].includes(done) ? 1 : 0;
     m.tasksOverdue = done === "OVERDUE" ? 1 : 0;
   }
   if (kind === "visits") {

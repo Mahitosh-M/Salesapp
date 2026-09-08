@@ -45,7 +45,7 @@ function Workflow({ kind }: { kind: string }) {
   const rows = state.rows.filter(
     (r) =>
       (status === "ALL" || r.status === status) &&
-      !(kind === "collectionPromises" && profile?.role === "Staff" && r.status === "PAID") &&
+      !(kind === "collectionPromises" && profile?.role === "Staff" && r.status === "PAID") && !(kind === "tasks" && profile?.role === "Staff" && String(r.title || "").startsWith("Collect ") && r.status === "PAID") &&
       [r.title, r.notes, r.product, r.phone]
         .join(" ")
         .toLowerCase()
@@ -150,6 +150,8 @@ function Workflow({ kind }: { kind: string }) {
                 </div>
                 <h3>{r.title}</h3>
                 {kind === "collectionPromises" && r.status === "UNREACHABLE" && <small>DAYS UNREACHABLE: {r.unreachableDays || 1}</small>}
+                {kind === "tasks" && String(r.title || "").startsWith("Collect ") && r.status === "UNREACHABLE" && <small className="last-order-highlight">DAYS UNREACHABLE: {r.unreachableDays || 1}</small>}
+                {kind === "tasks" && String(r.title || "").startsWith("Collect ") && r.status === "PROMISED" && <small className="last-order-highlight">Promised: {r.collectionAmount || ""} by {r.collectionPromiseDate || ""}</small>}
                 {kind === "followUps" && r.customerId && (() => { const c = customers.rows.find((x) => x.id === r.customerId); const days = c?.lastOrderDate ? Math.max(0, Math.floor((Date.parse(today()+"T00:00:00Z") - Date.parse(String(c.lastOrderDate)+"T00:00:00Z"))/86400000)) : null; return <small className="last-order-highlight">Last order: {days === null ? "unknown" : `${days} days`}{r.unreachableDays ? ` ? DAYS UNREACHABLE: ${r.unreachableDays}` : ""}</small>; })()}
                 <p>
                   {kind === "followUps"

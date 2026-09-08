@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import {
   modules,
   priorities,
@@ -83,10 +83,12 @@ export function RecordEditor({
   const customers = useRows("staffCustomers", [["active", "==", true]]);
   const adminAssigned =
     profile?.role === "Staff" && Boolean(record) && record?.createdBy !== profile.uid;
+  const collectionTask = kind === "tasks" && Boolean(record) && String(record?.title || "").startsWith("Collect ");
+  const collectionStatuses = ["UNREACHABLE", "PROMISED", "PAID"];
   const staffProgressFields = new Set(["outcome", "nextFollowUp", "notes"]);
   const [form, setForm] = useState<Data>(() => ({
     title: "",
-    status: spec.statuses[0],
+    status: collectionTask ? "UNREACHABLE" : spec.statuses[0],
     priority: "NORMAL",
     assignedStaffId: profile!.uid,
     ...Object.fromEntries(
@@ -160,7 +162,7 @@ export function RecordEditor({
               value={form.status}
               onChange={(e) => change("status", e.target.value)}
             >
-              {spec.statuses
+              {(collectionTask ? collectionStatuses : spec.statuses)
                 .filter((s) => profile?.role === "Admin" || s !== "CONVERTED")
                 .map((s) => (
                   <option key={s}>{s}</option>
@@ -195,7 +197,7 @@ export function RecordEditor({
           )}
           {spec.fields
             .filter(
-              (f) => (f.key !== "linkedCustomerId" || profile?.role === "Admin") && !(adminAssigned && kind === "tasks" && (f.key === "customerId" || f.key === "leadId")) && !(kind === "collectionPromises" && form.status !== "PROMISED" && (f.key === "amount" || f.key === "promiseDate")),
+              (f) => (f.key !== "linkedCustomerId" || profile?.role === "Admin") && !(adminAssigned && kind === "tasks" && (f.key === "customerId" || f.key === "leadId")) && !(kind === "collectionPromises" && form.status !== "PROMISED" && (f.key === "amount" || f.key === "promiseDate")) && !(kind === "tasks" && !collectionTask && ["collectionAmount", "collectionPromiseDate", "unreachableDays"].includes(f.key)) && !(kind === "tasks" && collectionTask && f.key === "unreachableDays" && form.status !== "UNREACHABLE") && !(kind === "tasks" && collectionTask && form.status !== "PROMISED" && ["collectionAmount", "collectionPromiseDate"].includes(f.key)),
             )
             .map((f) => (
               <label
@@ -311,7 +313,7 @@ export function RecordEditor({
           </button>
           <button disabled={busy}>
             {busy
-              ? "Saving…"
+              ? "Savingâ€¦"
               : adminAssigned
                 ? "Save next action"
                 : "Save " + spec.singular.toLowerCase()}
@@ -321,3 +323,4 @@ export function RecordEditor({
     </Modal>
   );
 }
+

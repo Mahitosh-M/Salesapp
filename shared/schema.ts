@@ -115,8 +115,8 @@ export const modules: Record<string, Module> = {
       "OVERDUE",
       "CANCELLED",
     ],
-    closed: ["COMPLETED", "SKIPPED", "CANCELLED"],
-    fields: [...basic, field("leadId", "Lead", "lead")],
+    closed: ["COMPLETED", "SKIPPED", "CANCELLED", "PAID"],
+    fields: [...basic, field("leadId", "Lead", "lead"), field("collectionAmount", "Amount", "number"), field("collectionPromiseDate", "Date", "date"), field("unreachableDays", "Unreachable days", "number")],
   },
   followUps: {
     label: "Follow-ups",
