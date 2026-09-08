@@ -154,7 +154,7 @@ function Workflow({ kind }: { kind: string }) {
                 <p>
                   {kind === "tasks" && String(r.title || "").startsWith("Collect ")
                     ? `Combined amount to collect: ${String(r.notes || "").match(/Combined unpaid amount ([0-9.]+)/)?.[1] || "check Collections"}`
-                    : r.product || r.objective || r.notes || "Keep the next step clear."}
+                    : r.product || r.objective || (kind === "tasks" ? r.staffNote || "" : r.notes) || "Keep the next step clear."}
                 </p>
                 <div className="record-meta">
                   <Badge value={r.status} />

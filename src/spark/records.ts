@@ -165,6 +165,7 @@ export async function saveRecord(
       !(owner.data()?.role === "Staff" || d.assignedStaffId === p.uid) ||
       (before && (before.branchId !== p.branchId || before.sourceType !== "ADMIN"))
     )) throw new HttpsError("permission-denied", "Managers can assign tasks only inside their branch");
+    if (p.role === "Staff" && before && before.createdBy !== p.uid && kind === "tasks") d.staffNote = d.notes || "";
     if (kind === "collectionPromises" && d.status === "UNREACHABLE") {
       const start = before?.unreachableSince || today();
       d.unreachableSince = start;

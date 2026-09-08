@@ -136,12 +136,7 @@ export function RecordEditor({
     >
       <form onSubmit={submit}>
         <ErrorBox message={error} />
-        {adminAssigned && (
-          <p className="locked-work-notice">
-            Admin gave you this work. You can update Status, Outcome, Notes, and
-            Next follow-up. The assigned work details stay locked.
-          </p>
-        )}
+
         <div className="form-grid">
           {!(adminAssigned && kind === "tasks") && <label className="span-2">
             {kind === "leads"
