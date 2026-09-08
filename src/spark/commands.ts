@@ -31,6 +31,8 @@ export const syncCriticalCisapp = onCall(async (request) => {
     if (kind === "invoices") {
       const stored = await import("./orderAttribution").then((m) => m.storeInvoiceOrder(id, payload, new Date().toISOString()));
       if (stored?.lastOrderChanged) await refreshCustomer(customerId);
+      const month = typeof payload.date === "string" ? payload.date.slice(0, 7) : "";
+      if (/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) await rebuildTargets(month);
     }
     await refreshCollectionScheduleForCustomer(customerId);
   }
