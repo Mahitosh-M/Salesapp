@@ -174,7 +174,7 @@ export const refreshCisStaffDirectory = onCall(async (request) => {
   await actor(request, true);
   const users = await salesDb.collection("users").where("role", "==", "Staff").get();
   const batch = salesDb.batch();
-  users.docs.forEach((doc) => { const u = doc.data(); const token = u.cisDirectoryToken || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`; batch.set(doc.ref, { cisDirectoryToken: token }, { merge: true }); batch.set(salesDb.doc(`cisStaffDirectoryMap/${token}`), { staffId: doc.id, branchId: u.branchId || "", active: u.active !== false }); batch.set(salesDb.doc(`cisStaffDirectory/${u.branchId}/staff/${token}`), { name: u.name || "" }); });
+  users.docs.forEach((doc) => { const u = doc.data(); const token = u.cisDirectoryToken || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`; batch.set(salesDb.doc(`cisStaffDirectoryMap/${token}`), { staffId: doc.id, branchId: u.branchId || "", active: u.active !== false }); batch.set(salesDb.doc(`cisStaffDirectory/${u.branchId}/staff/${token}`), { name: u.name || "" }); });
   await batch.commit();
   return { count: users.size };
 });
