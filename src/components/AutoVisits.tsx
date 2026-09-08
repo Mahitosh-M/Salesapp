@@ -22,18 +22,9 @@ export function AutoVisits() {
       busy = true;
       setError("");
       try {
-        const [{ generateAutomaticVisits }, { generateAutomaticFollowUps }] = await Promise.all([
-          import("../spark/autoVisits"),
-          import("../spark/autoFollowUps"),
-        ]);
+        const { generateAutomaticFollowUps } = await import("../spark/autoFollowUps");
         let cursor: string | undefined,
           changed = 0;
-        do {
-          const result = await generateAutomaticVisits(profile, cursor);
-          changed += result.changed;
-          cursor = result.cursor;
-          if (result.done) break;
-        } while (!stopped);
         cursor = undefined;
         do {
           const followUps = await generateAutomaticFollowUps(profile, cursor);
@@ -49,7 +40,7 @@ export function AutoVisits() {
       } catch (e) {
         if (!stopped)
           setError(
-            `Automatic visits and follow-ups could not refresh: ${(e as Error).message}`,
+            `Automatic follow-ups could not refresh: ${(e as Error).message}`,
           );
       } finally {
         busy = false;

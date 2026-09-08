@@ -80,6 +80,7 @@ export function RecordEditor({
 }) {
   const { profile } = useAuth();
   const spec = modules[kind];
+  const customers = useRows("staffCustomers", [["active", "==", true]]);
   const adminAssigned =
     profile?.role === "Staff" && Boolean(record) && record?.createdBy !== profile.uid;
   const staffProgressFields = new Set(["outcome", "nextFollowUp", "notes"]);
@@ -142,7 +143,7 @@ export function RecordEditor({
           </p>
         )}
         <div className="form-grid">
-          <label className="span-2">
+          {!(adminAssigned && kind === "tasks") && <label className="span-2">
             {kind === "leads"
               ? "Business name"
               : kind === "campaigns"
@@ -156,7 +157,7 @@ export function RecordEditor({
               value={form.title}
               onChange={(e) => change("title", e.target.value)}
             />
-          </label>
+          </label>}
           <label>
             Status
             <select
@@ -171,7 +172,7 @@ export function RecordEditor({
                 ))}
             </select>
           </label>
-          <label>
+          {!(adminAssigned && kind === "tasks") && <label>
             Priority
             <select
               aria-label="Priority"
@@ -183,8 +184,8 @@ export function RecordEditor({
                 <option key={s}>{s}</option>
               ))}
             </select>
-          </label>
-          {["Admin", "Manager"].includes(profile?.role || "") && (
+          </label>}
+          {["Admin", "Manager"].includes(profile?.role || "") && !(adminAssigned && kind === "tasks") && (
             <label className="span-2">
               Assigned owner
               <Picker
@@ -194,9 +195,12 @@ export function RecordEditor({
               />
             </label>
           )}
+          {adminAssigned && kind === "tasks" && form.customerId && (
+            <label className="span-2"><span>Customer</span><input value={customers.rows.find((c) => c.id === form.customerId)?.name || "Customer"} disabled /></label>
+          )}
           {spec.fields
             .filter(
-              (f) => f.key !== "linkedCustomerId" || profile?.role === "Admin",
+              (f) => (f.key !== "linkedCustomerId" || profile?.role === "Admin") && !(adminAssigned && kind === "tasks" && (f.key === "customerId" || f.key === "leadId")),
             )
             .map((f) => (
               <label
