@@ -408,7 +408,8 @@ export function validateRecord(kind: string, input: Data): Data {
   };
   for (const f of spec.fields) {
     const v = input[f.key];
-    if (f.required && (v === undefined || v === ""))
+    const conditionalCollectionField = spec === modules.collectionPromises && input.status !== "PROMISED" && (f.key === "amount" || f.key === "promiseDate");
+    if (f.required && !conditionalCollectionField && (v === undefined || v === ""))
       throw new Error(`${f.label} is required`);
     if (v === undefined || v === "") {
       data[f.key] = "";
