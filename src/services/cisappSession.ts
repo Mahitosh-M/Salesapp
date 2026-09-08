@@ -3,7 +3,7 @@
 import { initializeApp, getApps } from "firebase/app";
 import {
   getAuth,
-  inMemoryPersistence,
+  browserLocalPersistence,
   setPersistence,
   signInWithEmailAndPassword,
   signOut,
@@ -18,15 +18,30 @@ const app =
   getApps().find((a) => a.name === "cisapp-sync-auth") ||
   initializeApp(config, "cisapp-sync-auth");
 const cisAuth = getAuth(app);
+let readyPromise: Promise<void> | null = null;
+
+async function ready() {
+  if (!readyPromise) {
+    readyPromise = setPersistence(cisAuth, browserLocalPersistence).then(() => cisAuth.authStateReady());
+  }
+  await readyPromise;
+}
+
 export async function connect(email: string, password: string) {
-  await setPersistence(cisAuth, inMemoryPersistence);
+  await ready();
   await signInWithEmailAndPassword(cisAuth, email.trim(), password);
 }
 export async function token() {
+  await ready();
   if (!cisAuth.currentUser)
     throw new Error("Connect your existing CISapp Admin account");
   return cisAuth.currentUser.getIdToken();
 }
+export async function isConnected() {
+  await ready();
+  return Boolean(cisAuth.currentUser);
+}
 export async function disconnect() {
+  await ready();
   await signOut(cisAuth);
 }

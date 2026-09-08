@@ -14,11 +14,13 @@ function Picker({
   value,
   onChange,
   required = false,
+  disabled = false,
 }: {
   kind: "customer" | "lead" | "staff";
   value: string;
   onChange: (value: string, row?: Row) => void;
   required?: boolean;
+  disabled?: boolean;
 }) {
   const { profile } = useAuth();
   const state = useRows(
@@ -33,6 +35,7 @@ function Picker({
     <>
       <select
         required={required}
+        disabled={disabled}
         value={value}
         onChange={(e) =>
           onChange(
@@ -42,7 +45,8 @@ function Picker({
         }
       >
         <option value="">Select {kind}</option>
-        {value && !state.rows.some((r) => r.id === value) && (
+        {kind === "staff" && profile?.role === "Manager" && <option value={profile.uid}>{profile.name} (my work)</option>}
+        {value && !(kind === "staff" && profile?.role === "Manager" && value === profile.uid) && !state.rows.some((r) => r.id === value) && (
           <option value={value}>{value}</option>
         )}
         {state.rows.map((r) => (
@@ -52,7 +56,7 @@ function Picker({
         ))}
       </select>
       {state.hasMore && (
-        <button type="button" className="text-button" onClick={state.loadMore}>
+        <button type="button" className="text-button" disabled={disabled} onClick={state.loadMore}>
           Load more {kind}s
         </button>
       )}
@@ -76,6 +80,9 @@ export function RecordEditor({
 }) {
   const { profile } = useAuth();
   const spec = modules[kind];
+  const adminAssigned =
+    profile?.role === "Staff" && Boolean(record) && record?.createdBy !== profile.uid;
+  const staffProgressFields = new Set(["outcome", "nextFollowUp", "notes"]);
   const [form, setForm] = useState<Data>(() => ({
     title: "",
     status: spec.statuses[0],
@@ -123,11 +130,17 @@ export function RecordEditor({
   }
   return (
     <Modal
-      title={`${record ? "Update" : "New"} ${spec.singular.toLowerCase()}`}
+      title={adminAssigned ? "Update next action" : `${record ? "Update" : "New"} ${spec.singular.toLowerCase()}`}
       onClose={() => !busy && onClose()}
     >
       <form onSubmit={submit}>
         <ErrorBox message={error} />
+        {adminAssigned && (
+          <p className="locked-work-notice">
+            Admin gave you this work. You can update Status, Outcome, Notes, and
+            Next follow-up. The assigned work details stay locked.
+          </p>
+        )}
         <div className="form-grid">
           <label className="span-2">
             {kind === "leads"
@@ -138,6 +151,7 @@ export function RecordEditor({
             <input
               autoFocus
               required
+              disabled={adminAssigned}
               maxLength={180}
               value={form.title}
               onChange={(e) => change("title", e.target.value)}
@@ -161,6 +175,7 @@ export function RecordEditor({
             Priority
             <select
               aria-label="Priority"
+              disabled={adminAssigned}
               value={form.priority}
               onChange={(e) => change("priority", e.target.value)}
             >
@@ -169,7 +184,7 @@ export function RecordEditor({
               ))}
             </select>
           </label>
-          {profile?.role === "Admin" && (
+          {["Admin", "Manager"].includes(profile?.role || "") && (
             <label className="span-2">
               Assigned owner
               <Picker
@@ -194,6 +209,7 @@ export function RecordEditor({
                   <>
                     <Picker
                       required={f.required}
+                      disabled={adminAssigned && !staffProgressFields.has(f.key)}
                       kind={f.type as "customer" | "lead"}
                       value={form[f.key]}
                       onChange={(v, r) =>
@@ -210,6 +226,7 @@ export function RecordEditor({
                       <button
                         type="button"
                         className="text-button"
+                        disabled={adminAssigned && !staffProgressFields.has(f.key)}
                         onClick={() => change(f.key, "")}
                       >
                         Clear selection
@@ -219,6 +236,7 @@ export function RecordEditor({
                 ) : f.type === "select" ? (
                   <select
                     required={f.required}
+                    disabled={adminAssigned && !staffProgressFields.has(f.key)}
                     value={form[f.key]}
                     onChange={(e) => change(f.key, e.target.value)}
                   >
@@ -232,6 +250,7 @@ export function RecordEditor({
                 ) : f.type === "textarea" ? (
                   <textarea
                     required={f.required}
+                    disabled={adminAssigned && !staffProgressFields.has(f.key)}
                     rows={3}
                     maxLength={4000}
                     value={form[f.key]}
@@ -240,6 +259,7 @@ export function RecordEditor({
                 ) : (
                   <input
                     required={f.required}
+                    disabled={adminAssigned && !staffProgressFields.has(f.key)}
                     type={
                       f.type === "number"
                         ? "number"
@@ -291,7 +311,11 @@ export function RecordEditor({
             Cancel
           </button>
           <button disabled={busy}>
-            {busy ? "Saving…" : "Save " + spec.singular.toLowerCase()}
+            {busy
+              ? "Saving…"
+              : adminAssigned
+                ? "Save next action"
+                : "Save " + spec.singular.toLowerCase()}
           </button>
         </div>
       </form>

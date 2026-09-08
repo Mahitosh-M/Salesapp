@@ -192,7 +192,9 @@ function Workflow({ kind }: { kind: string }) {
                   )}
                 {!(kind === "activities" && profile?.role === "Staff") && (
                   <button className="secondary" onClick={() => setEdit(r)}>
-                    Update
+                    {profile?.role === "Staff" && r.createdBy !== profile.uid
+                      ? "Next action"
+                      : "Update"}
                   </button>
                 )}
                 {kind === "campaigns" &&

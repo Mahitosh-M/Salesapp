@@ -2236,3 +2236,38 @@ small,
     padding: 16px;
   }
 }
+
+/* Business workspace and accessible feedback. */
+:root { --purple:#2563a6; --navy:#16324f; --muted:#60758a; --border:#dae3ec; --soft:#edf4fa; --shadow:0 5px 20px #16324f08; color:#172f46; background:#f2f5f9; }
+.sidebar { background:#132f49; border-color:#203e59; }
+.sidebar .brand,.sidebar-user b { color:#fff; }
+.sidebar nav a { color:#c5d7e6; }
+.sidebar nav a:hover { background:#24465f; }
+.sidebar nav a.active { background:#2563a6; color:#fff; }
+.sidebar-user { border-color:#33516b; }
+.sidebar-user span,.workspace-label,.nav-caption { color:#a8bfd2; }
+.topbar { background:#fff; }
+p,.subtle,label { color:#52677c; }
+.panel,.customer-card,.record-card { border-radius:10px; box-shadow:var(--shadow); }
+.customer-card:hover { border-color:#63a0d7; }
+.page-heading h1,.customer-card h3 { color:#183b58; }
+button:hover,.button:hover { background:#1b518b; }
+.secondary:hover { background:#e8f1f8; color:#173953; }
+input:focus,select:focus,textarea:focus { border-color:#3d89c7; box-shadow:0 0 0 3px #3d89c71a; }
+input:disabled,select:disabled,textarea:disabled { background:#eef2f6; color:#5e7287; opacity:1; }
+.auto-sync-bar,.locked-work-notice { display:flex; align-items:center; gap:12px; padding:14px 16px; border:1px solid #bed7eb; border-radius:10px; background:#edf6fc; margin-bottom:20px; color:#245675; }
+.auto-sync-bar div { flex:1; min-width:0; }
+.auto-sync-bar b,.auto-sync-bar span { display:block; font-size:12px; }
+.auto-sync-bar.error { background:#fff1f1; border-color:#efbaba; }
+.target-live-note,.credited-count { display:flex; align-items:center; gap:8px; }
+.target-live-note > span { width:8px; height:8px; border-radius:50%; background:#14976c; }
+.order-credit { display:flex; align-items:center; gap:14px; padding:16px; border:1px solid #d9e5ed; border-radius:10px; margin:10px 0; }
+.order-credit div { flex:1; }
+.order-credit span,.order-credit small { display:block; }
+.order-credit.credited { border-left:4px solid #16a078; }
+.order-credit.direct { border-left:4px solid #91a0ad; }
+.progress-bar span { background:linear-gradient(90deg,#2879bd,#18a48b); transition:width .6s ease; }
+.record-card,.customer-card,button,.button { transition:transform .15s ease,box-shadow .15s ease,background .15s ease; }
+@media (hover:hover) { .customer-card:hover { transform:translateY(-2px); box-shadow:0 9px 24px #173e6514; } }
+@media (prefers-reduced-motion:no-preference) { .panel { animation:workspace-in .25s ease-out; } @keyframes workspace-in { from { opacity:.5; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } } }
+@media (max-width:600px) { .auto-sync-bar { flex-wrap:wrap; } .order-credit { padding:12px; } main > .toolbar { flex-wrap:wrap; } }

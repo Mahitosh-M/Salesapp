@@ -11,7 +11,8 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { salesAuth } from "./firebase";
+import { doc as firestoreDoc, onSnapshot as onDocumentSnapshot } from "firebase/firestore";
+import { salesAuth, salesDb } from "./firebase";
 import {
   readOne,
   page,
@@ -48,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           if (user) {
             const p = await readOne("users", user.uid);
-            if (!p || !p.active || !["Admin", "Staff"].includes(p.role))
+            if (!p || !p.active || !["Admin", "Manager", "Staff"].includes(p.role))
               throw new Error(
                 "Your Salesapp access has not been enabled. Ask your Admin to create an active user profile.",
               );
@@ -176,4 +177,31 @@ export function useDocument(name: string, id: string) {
     };
   }, [name, id, revision]);
   return { row, loading, error, reload: () => setRevision((x) => x + 1) };
+}
+export function useLiveDocument(name: string, id: string) {
+  const { profile } = useAuth();
+  const [row, setRow] = useState<Row | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    if (!profile || !id) return;
+    setLoading(true);
+    setError("");
+    return onDocumentSnapshot(
+      firestoreDoc(salesDb, name, id),
+      (snapshot) => {
+        setRow(
+          snapshot.exists()
+            ? ({ ...snapshot.data(), id: snapshot.id } as Row)
+            : null,
+        );
+        setLoading(false);
+      },
+      (nextError) => {
+        setError(nextError.message);
+        setLoading(false);
+      },
+    );
+  }, [profile?.uid, name, id]);
+  return { row, loading, error };
 }

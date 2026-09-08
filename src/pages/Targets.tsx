@@ -1,5 +1,6 @@
 ﻿import { useState } from "react";
-import { useAuth, useRows } from "../hooks";
+import { useAuth, useLiveDocument, useRows } from "../hooks";
+import { BadgeCheck, CircleOff, ReceiptText } from "lucide-react";
 import {
   Header,
   Metric,
@@ -57,7 +58,6 @@ export default function Targets() {
 }
 function TargetRows({ month }: { month: string }) {
   const { profile } = useAuth();
-  const staff = useRows("staffTargetProgress", [["month", "==", month]]);
   return (
     <>
       {profile?.role === "Admin" && (
@@ -77,19 +77,76 @@ function TargetRows({ month }: { month: string }) {
       <Panel
         title={profile?.role === "Admin" ? "Staff targets" : "Your progress"}
       >
-        <ErrorBox message={staff.error} />
-        {staff.rows.map((t) => (
-          <TargetCard key={t.id} row={t} />
-        ))}
-        {!staff.loading && !staff.rows.length && (
-          <Empty
-            title="No target set for this month"
-            text="An Admin can set a monthly target for your account."
-          />
+        {profile?.role === "Admin" ? (
+          <AdminStaffTargets month={month} />
+        ) : (
+          <LiveStaffTarget month={month} />
         )}
-        <PageEnd state={staff} />
       </Panel>
+      <AttributedOrders month={month} />
     </>
+  );
+}
+function AdminStaffTargets({ month }: { month: string }) {
+  const staff = useRows("staffTargetProgress", [["month", "==", month]]);
+  return (
+    <>
+      <ErrorBox message={staff.error} />
+      {staff.rows.map((target) => <TargetCard key={target.id} row={target} />)}
+      {!staff.loading && !staff.rows.length && <Empty title="No Staff targets" text="Set a monthly target for a Staff account." />}
+      <PageEnd state={staff} />
+    </>
+  );
+}
+function LiveStaffTarget({ month }: { month: string }) {
+  const { profile } = useAuth();
+  const target = useLiveDocument(
+    "staffTargetProgress",
+    `${profile?.uid || "missing"}_${month}`,
+  );
+  return (
+    <>
+      <ErrorBox message={target.error} />
+      {target.row ? <TargetCard row={target.row} /> : !target.loading ? (
+        <Empty title="No target set for this month" text="Ask your Admin to set your monthly target." />
+      ) : null}
+      <p className="target-live-note"><span /> Live progress updates as verified orders are credited.</p>
+    </>
+  );
+}
+function AttributedOrders({ month }: { month: string }) {
+  const { profile } = useAuth();
+  const orders = useRows("staffSalesOrders", [["month", "==", month]]);
+  const rows = [...orders.rows].sort((a, b) =>
+    String(b.orderDate).localeCompare(String(a.orderDate)),
+  );
+  return (
+    <Panel title={profile?.role === "Admin" ? "Order attribution" : "Orders credited to you"}>
+      <p className="notice">
+        A Staff target increases only when a real CISapp invoice matches an
+        ORDERED result saved by that Staff member. Direct customer orders stay
+        visible to Admin but do not increase a Staff target.
+      </p>
+      <ErrorBox message={orders.error} />
+      <div className="order-credit-list">
+        {rows.map((order) => {
+          const credited = order.attributionStatus === "STAFF_CREDITED";
+          return (
+            <article className={`order-credit ${credited ? "credited" : "direct"}`} key={order.id}>
+              <span className="order-credit-icon">{credited ? <BadgeCheck size={19} /> : <CircleOff size={19} />}</span>
+              <div>
+                <b>{order.invoiceNumber} · {order.customerName}</b>
+                <span>{order.orderDate} · {money(order.amount)}</span>
+                <small>{credited ? `Credited to ${order.assignedStaffName || order.assignedStaffId} from ${label(order.sourceActionType || "work")} ${order.sourceActionId || ""}` : "Direct customer order · no Staff target credit"}</small>
+              </div>
+              <ReceiptText size={18} />
+            </article>
+          );
+        })}
+      </div>
+      {!orders.loading && !rows.length && <Empty title="No synced orders for this month" text="Orders appear after the daily CISapp sync." />}
+      <PageEnd state={orders} />
+    </Panel>
   );
 }
 function TargetGroup({
@@ -132,6 +189,7 @@ function TargetCard({ row: t }: { row: any }) {
         <Metric label="Remaining" value={money(metrics.remaining)} />
         <Metric label="Days remaining" value={metrics.daysRemaining} />
       </div>
+      {t.staffId && <p className="credited-count"><BadgeCheck size={15} /> {t.creditedOrderCount || 0} verified Staff orders credited</p>}
       <div className="progress-bar">
         <span
           style={{
@@ -226,9 +284,10 @@ function TargetForm({
           />
         </label>
         <p className="notice">
-          Staff achievement follows monthly customer assignments. Branch
-          achievement requires a controlled monthly invoice target
-          reconciliation.
+          Staff achievement counts only verified CISapp invoices matched to an
+          ORDERED result saved by that Staff member. Direct orders do not add to
+          a Staff target. Company and branch totals still include every eligible
+          invoice.
         </p>
         <div className="form-footer">
           <button disabled={busy}>{busy ? "Savingâ€¦" : "Save target"}</button>

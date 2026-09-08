@@ -5,6 +5,8 @@ export const sourceSpecs = [
     fields: [
       "name",
       "mobile",
+      "customerType",
+      "tier",
       "area",
       "branchId",
       "status",
@@ -101,6 +103,9 @@ export const sourceSpecs = [
     ],
     timestamps: ["updatedAt"],
   },
+  { name: "invoices", fields: ["customerId", "totalSales", "date", "dueDate", "savedDueDate", "finalPcCutoffDate", "bufferDaysAtInvoice", "tierAtInvoice", "invoiceNumber", "invoiceType", "status", "recordStatus", "isOpeningBalance", "updatedAt", "createdAt", "shopId", "branchSystemVersion"], timestamps: ["updatedAt"] },
+  { name: "payments", fields: ["customerId", "invoiceId", "amount", "amountAppliedToInvoice", "cashDiscount", "updatedAt", "createdAt"], timestamps: ["updatedAt"] },
+  { name: "settings", fields: ["key", "paymentBuffers", "creditDays", "updatedAt"], timestamps: ["updatedAt"] },
 ] as const;
 export const sourceNames = sourceSpecs.map((s) => s.name);
 export function projectSource(name: string, input: Data): Data {
@@ -141,6 +146,7 @@ export function materializeCustomer(
       syncedAt: now,
     },
     collection: {
+      branchId: assignment.branchId || customer?.branchId || "",
       customerId: id,
       name: customer?.name || "Source customer unavailable",
       assignedStaffId: owner,

@@ -36,10 +36,16 @@ export default function Sync() {
   );
   useEffect(() => {
     live.current = true;
+    void import("../services/cisappSession").then(async (sourceSession) => {
+      session.current = sourceSession;
+      const hasSavedConnection = await sourceSession.isConnected();
+      if (live.current) setConnected(hasSavedConnection);
+    }).catch((e) => {
+      if (live.current) setError((e as Error).message);
+    });
     return () => {
       live.current = false;
       stop.current = true;
-      void session.current?.disconnect();
     };
   }, []);
   async function connect(e: React.FormEvent) {
@@ -157,8 +163,8 @@ export default function Sync() {
           {!connected ? (
             <form onSubmit={connect}>
               <p className="subtle">
-                Use an existing active CISapp Admin account. This separate
-                session is kept in memory only.
+                Use an existing active CISapp Admin account once. This browser
+                remembers the secure Firebase session so the daily sync can run.
               </p>
               <label>
                 CISapp Admin email
@@ -216,9 +222,12 @@ export default function Sync() {
       </div>
       <Panel title="Sync controls">
         <p className="notice">
-          These actions consume CISapp reads. Initial import and full
+          These actions read CISapp but store the run count only in Salesapp. Initial import and full
           reconciliation read all selected summary documents. Sync Now reads
-          timestamp changes with a ten-minute overlap. Invoice target
+          timestamp changes and new invoice events with a ten-minute overlap.
+          Each invoice updates the saved last-order date in Salesapp, so the
+          10-day check uses Salesapp data instead of rereading every customer.
+          Invoice target
           reconciliation reads the selected month’s invoices. Each regular sync
           also checks each active customer’s latest completed sales invoice for
           automatic visit planning.
@@ -284,7 +293,7 @@ export default function Sync() {
         </div>
         {busy && <Loading />}
         <p className="subtle">
-          Keep this page open during sync. Closing it can interrupt a batch;
+          After the first successful import, Salesapp runs one incremental sync each day when an Admin opens the app. New and changed invoice rows are read once and their last-order dates stay in Salesapp. Keep this page open during a manual sync. Closing it can interrupt a batch;
           retry resumes from the saved checkpoint. Use full reconciliation
           periodically to detect deleted or untimestamped source records.
           Incomplete source summaries remain marked unavailable.

@@ -33,11 +33,14 @@ import {
   LifeBuoy,
   ChevronRight,
 } from "lucide-react";
+import { AutoCollections } from "./components/AutoCollections";
 import { AutoVisits } from "./components/AutoVisits";
+import { AutoCisappSync } from "./components/AutoCisappSync";
 import { useAuth } from "./hooks";
 import { Loading, ErrorBox } from "./components/ui";
 import { emulator } from "./firebase";
 import { modules } from "../shared/schema";
+const ManagerHome = lazy(() => import("./pages/ManagerHome"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Customers = lazy(() => import("./pages/Customers"));
 const CustomerDetail = lazy(() =>
@@ -64,6 +67,7 @@ export default function App() {
       </div>
     );
   if (!profile) return <Login />;
+  if (profile.role === "Manager") return <Suspense fallback={<Loading />}><ManagerHome /></Suspense>;
   return (
     <Suspense fallback={<Loading />}>
       <Routes>
@@ -213,7 +217,9 @@ function Layout() {
           </div>
         </header>
         <main>
+          {profile?.role === "Admin" && location.pathname !== "/sync" && <AutoCisappSync />}
           <AutoVisits />
+          <AutoCollections />
           <Outlet />
         </main>
         <footer className="app-footer">

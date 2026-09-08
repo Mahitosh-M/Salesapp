@@ -1,993 +1,1051 @@
 {
-    "indexes":  [
-                    {
-                        "collectionGroup":  "leads",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "leads",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "leads",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "tasks",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "tasks",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "tasks",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "followUps",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "followUps",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "followUps",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "activities",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "activities",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "activities",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "visits",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "visits",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "visits",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "collectionPromises",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "collectionPromises",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "collectionPromises",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "customerRequirements",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "customerRequirements",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "customerRequirements",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "opportunities",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "opportunities",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "opportunities",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "reactivations",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "reactivations",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "reactivations",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "campaignAssignments",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "campaignAssignments",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "campaignAssignments",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "objections",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "objections",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "objections",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "competitorNotes",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "competitorNotes",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "competitorNotes",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "complaints",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "complaints",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "complaints",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdAt",
-                                           "order":  "DESCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "tasks",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "status",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "dueDate",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "tasks",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "status",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "dueDate",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "customerRequirements",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "status",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "reactivations",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "status",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "opportunities",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "type",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "status",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "leads",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdOn",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "tasks",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdOn",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "followUps",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdOn",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "activities",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdOn",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "visits",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdOn",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "collectionPromises",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdOn",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "customerRequirements",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdOn",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "opportunities",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdOn",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "reactivations",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdOn",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "campaignAssignments",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdOn",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "objections",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdOn",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "competitorNotes",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdOn",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "complaints",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "createdOn",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "visits",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "status",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "visits",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "customerId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "status",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "collectionSnapshots",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "active",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "outstandingAmount",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    },
-                    {
-                        "collectionGroup":  "staffCustomers",
-                        "queryScope":  "COLLECTION",
-                        "fields":  [
-                                       {
-                                           "fieldPath":  "assignedStaffId",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "active",
-                                           "order":  "ASCENDING"
-                                       },
-                                       {
-                                           "fieldPath":  "__name__",
-                                           "order":  "ASCENDING"
-                                       }
-                                   ]
-                    }
-                ],
-    "fieldOverrides":  [
-
-                       ]
+  "indexes": [
+    {
+      "collectionGroup": "leads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "leads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "leads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "followUps",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "followUps",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "followUps",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "activities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "activities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "activities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "visits",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "visits",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "visits",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "collectionPromises",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "collectionPromises",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "collectionPromises",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "customerRequirements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "customerRequirements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "customerRequirements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "opportunities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "opportunities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "opportunities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "reactivations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "reactivations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "reactivations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "campaignAssignments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "campaignAssignments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "campaignAssignments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "objections",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "objections",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "objections",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "competitorNotes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "competitorNotes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "competitorNotes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "complaints",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "complaints",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "complaints",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dueDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dueDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "customerRequirements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "reactivations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "opportunities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "type",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "leads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "tasks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "followUps",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "activities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "visits",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "collectionPromises",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "customerRequirements",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "opportunities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "reactivations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "campaignAssignments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "objections",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "competitorNotes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "complaints",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdOn",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "visits",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "visits",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "customerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "collectionSnapshots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "active",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "outstandingAmount",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "staffCustomers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "active",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "collectionSnapshots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "branchId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "active",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "branchId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "role",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "staffCustomers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "branchId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "active",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "staffSalesOrders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "assignedStaffId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "month",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
 }

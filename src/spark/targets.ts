@@ -26,7 +26,7 @@ const completeSales = (s: Data | undefined): number | null =>
     ? s.totalSales
     : null;
 export async function rebuildTargets(month: string) {
-  const [settings, mappings, monthly, business, invoice] = await Promise.all([
+  const [settings, mappings, monthly, business, invoice, salesOrders] = await Promise.all([
     allRows("targets", ["month", "==", month]),
     allRows("monthlyAssignments", ["month", "==", month]),
     allRows("adminCis_customerMonthlySnapshots", [
@@ -36,6 +36,7 @@ export async function rebuildTargets(month: string) {
     ]),
     salesDb.doc(`adminCis_businessMonthlySnapshots/${month}`).get(),
     salesDb.doc(`adminInvoiceTargets/${month}`).get(),
+    allRows("staffSalesOrders", ["month", "==", month]),
   ]);
   const byCustomer = new Map(
     monthly.map((r) => [r.payload.customerId, r.payload]),
@@ -44,13 +45,19 @@ export async function rebuildTargets(month: string) {
   const company = business.data()?.payload;
   const reconciled = invoice.data();
   const totals: Record<string, number> = {};
-  const incomplete = new Set<string>();
-  const assignedCounts: Record<string, number> = {};
-  for (const row of mappings) {
-    assignedCounts[row.staffId] = (assignedCounts[row.staffId] || 0) + 1;
-    const s = byCustomer.get(row.customerId);
-    if (completeSales(s) === null) incomplete.add(row.staffId);
-    else totals[row.staffId] = (totals[row.staffId] || 0) + completeSales(s)!;
+  const creditedCounts: Record<string, number> = {};
+  let unattributedSales = 0;
+  for (const order of salesOrders) {
+    if (
+      order.attributionStatus === "STAFF_CREDITED" &&
+      order.assignedStaffId &&
+      typeof order.amount === "number"
+    ) {
+      totals[order.assignedStaffId] =
+        (totals[order.assignedStaffId] || 0) + order.amount;
+      creditedCounts[order.assignedStaffId] =
+        (creditedCounts[order.assignedStaffId] || 0) + 1;
+    } else if (typeof order.amount === "number") unattributedSales += order.amount;
   }
   let unmappedCustomers = 0;
   for (const c of byCustomer.keys()) if (!mapping.has(c)) unmappedCustomers++;
@@ -71,15 +78,8 @@ export async function rebuildTargets(month: string) {
           : "Controlled monthly invoice target reconciliation";
     }
     if (t.scope === "STAFF") {
-      achieved =
-        assignedCounts[t.subjectId] && !incomplete.has(t.subjectId)
-          ? totals[t.subjectId] || 0
-          : reconciled && reconciled.staffAttributionValid !== false
-            ? (reconciled.staff?.[t.subjectId] ??
-              (mappings.some((r) => r.staffId === t.subjectId) ? 0 : null))
-            : null;
-      basis =
-        "Full-month customer assignment (not invoice salesperson attribution)";
+      achieved = totals[t.subjectId] || 0;
+      basis = "Verified CISapp invoices matched to this Staff member's ORDERED work result";
     }
     if (t.scope === "BRANCH") {
       achieved = reconciled ? (reconciled.branches?.[t.subjectId] ?? 0) : null;
@@ -102,6 +102,8 @@ export async function rebuildTargets(month: string) {
       month,
       staffId: t.scope === "STAFF" ? t.subjectId : "",
       branchId: t.scope === "BRANCH" ? t.subjectId : "",
+      creditedOrderCount:
+        t.scope === "STAFF" ? creditedCounts[t.subjectId] || 0 : 0,
       basis,
       updatedAt: now,
     });
@@ -116,6 +118,10 @@ export async function rebuildTargets(month: string) {
     month,
     unmappedCustomers,
     unallocatedBranchSales: reconciled?.unallocatedBranchSales ?? null,
+    unattributedSales,
+    creditedStaffOrders: salesOrders.filter(
+      (order) => order.attributionStatus === "STAFF_CREDITED",
+    ).length,
     updatedAt: now,
   });
   await batch.commit();

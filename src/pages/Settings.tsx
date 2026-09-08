@@ -202,6 +202,7 @@ function UserForm({
             onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
           >
             <option>Staff</option>
+            <option>Manager</option>
             <option>Admin</option>
           </select>
         </label>

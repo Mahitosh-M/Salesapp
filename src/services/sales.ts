@@ -91,6 +91,7 @@ export async function page(
       c.push(where("status", "==", "APPROVED"));
     else c.push(where("assignedStaffId", "==", p.uid));
   }
+  if (p.role === "Manager") { c.push(where("branchId", "==", p.branchId || "NO_BRANCH")); if (name === "users") c.push(where("role", "==", "Staff")); }
   filters.forEach((f) => c.push(where(...f)));
   if (sort) c.push(orderBy(...sort));
   if (cursor) c.push(startAfter(cursor));

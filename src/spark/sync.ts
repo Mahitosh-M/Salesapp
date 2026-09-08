@@ -11,6 +11,8 @@ import {
   sourceSpecs,
 } from "./cisapp/mapper";
 import { rebuildTargets, allRows } from "./targets";
+import { refreshCollectionSchedules } from "./collections";
+import { storeInvoiceOrder } from "./orderAttribution";
 import { type Data, today } from "../../shared/schema";
 const stateRef = salesDb.doc("syncState/cisapp");
 const hash = async (data: Data) =>
@@ -71,13 +73,15 @@ export async function syncStep(
       lock,
       lockUntil: Date.now() + 120000,
     };
-    if (!s.runId) {
-      const m = mode === "RETRY" ? "INCREMENTAL" : mode;
+    if (!s.runId || s.runSchemaVersion !== 1) {
+      const requested = mode === "RETRY" ? "INCREMENTAL" : mode;
+      const m = !s.collectionSchemaVersion && s.lastSuccessfulSync ? "RECONCILE" : requested;
       if (m === "INCREMENTAL" && !s.lastSuccessfulSync)
         throw new HttpsError("failed-precondition", "Run initial import first");
       next = {
         ...next,
         runId: randomUUID(),
+        runSchemaVersion: 1,
         mode: m,
         month,
         startedAt: at,
@@ -109,7 +113,7 @@ export async function syncStep(
     // Existing source Admin authorization is checked on each bounded batch; token never persists.
     const reader = testReader || createCisappReader(token);
     if (
-      ["READ", "LAST_ORDERS"].includes(state.phase) ||
+      ["READ", "LAST_ORDERS", "INVOICE_CHANGES"].includes(state.phase) ||
       state.mode === "INVOICE_TARGET"
     )
       await reader.assertAdmin();
@@ -123,11 +127,6 @@ export async function syncStep(
         state.startedAt,
         state.month,
       );
-      const mappings = new Map(
-        (await allRows("monthlyAssignments", ["month", "==", state.month])).map(
-          (r) => [r.customerId, r.staffId],
-        ),
-      );
       const totals = state.invoiceTotals;
       for (const r of page.rows) {
         const d = r.data;
@@ -138,8 +137,11 @@ export async function syncStep(
         if (d.branchSystemVersion === 1 && typeof d.shopId === "string")
           totals.branches[d.shopId] = (totals.branches[d.shopId] || 0) + amount;
         else totals.unallocatedBranchSales += amount;
-        const staff = mappings.get(d.customerId);
-        if (staff) totals.staff[staff] = (totals.staff[staff] || 0) + amount;
+        const stored = await storeInvoiceOrder(r.id, d, at);
+        if (stored?.assignedStaffId)
+          totals.staff[stored.assignedStaffId] =
+            (totals.staff[stored.assignedStaffId] || 0) + amount;
+        if (stored?.lastOrderChanged) await refreshCustomer(stored.customerId);
       }
       state = {
         ...state,
@@ -188,10 +190,8 @@ export async function syncStep(
         });
         if (changed) {
           state.recordsUpdated++;
-          if (!spec.name.includes("Monthly"))
-            batch.set(salesDb.doc(`syncDirtyCustomers/${row.id}`), {
-              customerId: row.id,
-            });
+          if (!["invoices", "payments", "settings"].includes(spec.name) && !spec.name.includes("Monthly"))
+            batch.set(salesDb.doc(`syncDirtyCustomers/${row.id}`), { customerId: row.id });
         } else state.recordsUnchanged++;
       }
       await batch.commit();
@@ -219,7 +219,7 @@ export async function syncStep(
       for (const doc of page.docs) {
         if (doc.data().seenRun === state.runId) continue;
         batch.delete(doc.ref);
-        if (!spec.name.includes("Monthly"))
+        if (!["invoices", "payments", "settings"].includes(spec.name) && !spec.name.includes("Monthly"))
           batch.set(salesDb.doc(`syncDirtyCustomers/${doc.id}`), {
             customerId: doc.id,
           });
@@ -244,9 +244,27 @@ export async function syncStep(
         state.customersSynchronized++;
       }
       if (dirty.size < 25) {
-        state.phase = "LAST_ORDERS";
+        state.phase = full ? "LAST_ORDERS" : "INVOICE_CHANGES";
         state.orderCustomerCursor = null;
         state.orderInvoiceCursor = null;
+      }
+    } else if (state.phase === "INVOICE_CHANGES") {
+      const page = await reader.page(
+        "invoices",
+        "updatedAt",
+        state.cursor as Cursor | null,
+        state.since,
+        state.startedAt,
+      );
+      for (const row of page.rows) {
+        const stored = await storeInvoiceOrder(row.id, row.data, at);
+        if (stored?.lastOrderChanged) await refreshCustomer(stored.customerId);
+      }
+      state.recordsRead += page.rows.length;
+      state.cursor = page.cursor;
+      if (page.done) {
+        state.cursor = null;
+        state.phase = "FINALIZE";
       }
     } else if (state.phase === "LAST_ORDERS") {
       let q = salesDb
@@ -276,10 +294,12 @@ export async function syncStep(
         } else state.orderInvoiceCursor = result.cursor;
       }
     } else {
+      await refreshCollectionSchedules();
       await rebuildTargets(state.month);
       state = {
         ...state,
         lastSuccessfulSync: state.startedAt,
+        collectionSchemaVersion: 1,
         lastCompletedAt: at,
         status: "SUCCESS",
         runId: null,
@@ -390,6 +410,6 @@ export async function refreshCustomer(id: string) {
   );
   const batch = salesDb.batch();
   batch.set(salesDb.doc(`staffCustomers/${id}`), data.customer);
-  batch.set(salesDb.doc(`collectionSnapshots/${id}`), data.collection);
+  batch.set(salesDb.doc(`collectionSnapshots/${id}`), data.collection, { merge: true });
   await batch.commit();
 }

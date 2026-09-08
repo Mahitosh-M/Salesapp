@@ -26,7 +26,7 @@ export async function saveRecord(
   } catch (e) {
     throw new HttpsError("invalid-argument", (e as Error).message);
   }
-  if (p.role !== "Admin" && d.assignedStaffId !== p.uid)
+  if (p.role === "Staff" && d.assignedStaffId !== p.uid)
     throw new HttpsError(
       "permission-denied",
       "Records must be assigned to you",
@@ -57,11 +57,27 @@ export async function saveRecord(
     const oldSnap = await tx.get(ref);
     const before = oldSnap.exists ? oldSnap.data()! : null;
     if (before && createOnly) return { id, alreadyExists: true };
-    if (before && p.role !== "Admin" && before.assignedStaffId !== p.uid)
+    if (before && p.role === "Staff" && before.assignedStaffId !== p.uid)
       throw new HttpsError(
         "permission-denied",
         "This record belongs to another staff member",
       );
+    if (before && p.role === "Staff" && before.createdBy !== p.uid) {
+      const progressFields = new Set([
+        "status",
+        "outcome",
+        "nextFollowUp",
+        "notes",
+      ]);
+      const changedAssignment = Object.keys(d).some(
+        (key) => !progressFields.has(key) && (d[key] ?? "") !== (before[key] ?? ""),
+      );
+      if (changedAssignment)
+        throw new HttpsError(
+          "permission-denied",
+          "Admin-assigned work only allows progress, notes, and the next action to be updated",
+        );
+    }
     if (kind === "campaignAssignments" && !before && p.role !== "Admin")
       throw new HttpsError(
         "permission-denied",
@@ -99,7 +115,7 @@ export async function saveRecord(
         );
       if (
         key === "customerId" &&
-        p.role !== "Admin" &&
+        p.role === "Staff" &&
         c.data()?.assignedStaffId !== p.uid
       )
         throw new HttpsError(
@@ -144,8 +160,14 @@ export async function saveRecord(
           );
       }
     }
+    if (p.role === "Manager" && (
+      kind !== "tasks" || !p.branchId || owner.data()?.branchId !== p.branchId ||
+      !(owner.data()?.role === "Staff" || d.assignedStaffId === p.uid) ||
+      (before && (before.branchId !== p.branchId || before.sourceType !== "ADMIN"))
+    )) throw new HttpsError("permission-denied", "Managers can assign tasks only inside their branch");
     const after: Data = {
       ...d,
+      ...(kind === "tasks" && (!before || before.branchId !== undefined || p.role === "Admin") ? { branchId: owner.data()?.branchId || "" } : {}),
       createdOn: before?.createdOn || serverTimestamp(),
       submittedAt: serverTimestamp(),
       assignedStaffName: owner.data()?.name || d.assignedStaffId,
@@ -172,6 +194,10 @@ export async function saveRecord(
       ? salesDb.doc(`tasks/followUps_activity_${id}`)
       : null;
     const followTask = followTaskRef ? await tx.get(followTaskRef) : null;
+    const orderSignalRef = d.customerId && (d.outcome === "ORDERED" || (kind === "campaignAssignments" && d.status === "ORDERED"))
+      ? salesDb.doc(`customerOrderSignals/${requireId(d.customerId)}`)
+      : null;
+    const orderSignal = orderSignalRef ? await tx.get(orderSignalRef) : null;
     // Every read precedes every write, so this remains a valid retryable transaction.
     tx.set(ref, after);
     applyCounters(tx, kind, before, after, stamp);
@@ -217,6 +243,34 @@ export async function saveRecord(
       const task = taskFromSource("followUps", followRef.id, f);
       tx.set(followTaskRef, task);
       applyCounters(tx, "tasks", followTask?.data() || null, task, stamp);
+    }
+    if (orderSignalRef) {
+      const isOrderResult =
+        d.outcome === "ORDERED" ||
+        (kind === "campaignAssignments" && d.status === "ORDERED");
+      if (isOrderResult) {
+        tx.set(orderSignalRef, {
+          customerId: d.customerId,
+          assignedStaffId: d.assignedStaffId,
+          assignedStaffName: after.assignedStaffName,
+          orderedOn: today(),
+          orderedAt: stamp,
+          sourceType: kind,
+          sourceId: id,
+          sourceTitle: d.title,
+          claimedInvoiceId:
+            orderSignal?.data()?.sourceType === kind &&
+            orderSignal?.data()?.sourceId === id
+              ? orderSignal?.data()?.claimedInvoiceId || ""
+              : "",
+        });
+      } else if (
+        orderSignal?.data()?.sourceType === kind &&
+        orderSignal?.data()?.sourceId === id &&
+        !orderSignal?.data()?.claimedInvoiceId
+      ) {
+        tx.delete(orderSignalRef);
+      }
     }
     return { id };
   });

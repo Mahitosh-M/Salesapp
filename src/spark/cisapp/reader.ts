@@ -163,7 +163,7 @@ export function createCisappReader(
       until: string,
       month?: string,
     ): Promise<SourcePage> {
-      if (!sourceNames.includes(name as any) && !(name === "invoices" && month))
+      if (!sourceNames.includes(name as any) && name !== "invoices")
         throw new Error("Source collection is not allowed");
       if (
         field &&
@@ -175,21 +175,7 @@ export function createCisappReader(
         ].includes(field)
       )
         throw new Error("Source timestamp is not allowed");
-      const fields =
-        name === "invoices"
-          ? [
-              "customerId",
-              "totalSales",
-              "date",
-              "invoiceType",
-              "recordStatus",
-              "status",
-              "isOpeningBalance",
-              "invoiceNumber",
-              "shopId",
-              "branchSystemVersion",
-            ]
-          : sourceSpecs.find((s) => s.name === name)!.fields;
+      const fields = sourceSpecs.find((spec) => spec.name === name)!.fields;
       const q: Data = {
         select: { fields: fields.map((fieldPath) => ({ fieldPath })) },
         from: [{ collectionId: name }],

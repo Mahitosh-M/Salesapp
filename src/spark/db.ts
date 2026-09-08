@@ -142,7 +142,7 @@ export async function actor(
   const p = (await salesDb.doc(`users/${user.uid}`).get()).data();
   if (
     !p?.active ||
-    !["Admin", "Staff"].includes(p.role) ||
+    !["Admin", "Manager", "Staff"].includes(p.role) ||
     (admin && p.role !== "Admin")
   )
     throw new HttpsError("permission-denied", "This action is not permitted");

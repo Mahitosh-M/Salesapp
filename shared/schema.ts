@@ -1,4 +1,4 @@
-﻿export type Role = "Admin" | "Staff";
+﻿export type Role = "Admin" | "Manager" | "Staff";
 export type Data = Record<string, any>;
 export type Profile = {
   uid: string;

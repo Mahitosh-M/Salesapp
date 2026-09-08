@@ -24,7 +24,7 @@ export const saveUser = onCall(async (request) => {
   if (
     typeof d.name !== "string" ||
     !d.name.trim() ||
-    !["Admin", "Staff"].includes(d.role) ||
+    !["Admin", "Manager", "Staff"].includes(d.role) ||
     !branchIds.includes(d.branchId) ||
     typeof d.email !== "string"
   )
@@ -66,7 +66,7 @@ export const saveUser = onCall(async (request) => {
     branchId: typeof d.branchId === "string" ? d.branchId : "",
     updatedAt: new Date().toISOString(),
   });
-  const assignedCustomers = await assignUnassignedCustomersForStaff(uid, d.branchId);
+  const assignedCustomers = d.role === "Staff" ? await assignUnassignedCustomersForStaff(uid, d.branchId) : 0;
   return { uid, assignedCustomers };
 });
 export const assignCustomer = onCall(async (request) => {
@@ -250,40 +250,6 @@ export const assignCampaignPage = onCall(async (request) => {
     assignmentDone: done,
   });
   return { done, processed: page.size, assigned };
-});
-export const generateCollectionActions = onCall(async (request) => {
-  const p = await actor(request, true);
-  let q = salesDb
-    .collection("collectionSnapshots")
-    .where("active", "==", true)
-    .orderBy(FieldPath.documentId())
-    .limit(25);
-  if (request.data.cursor) q = q.startAfter(requireId(request.data.cursor));
-  const snap = await q.get();
-  let created = 0;
-  for (const row of snap.docs) {
-    const d = row.data();
-    if (!d.assignedStaffId || !(d.overdueAmount > 0)) continue;
-    const id = `collection_${row.id}`;
-    if ((await salesDb.doc(`tasks/${id}`).get()).exists) continue;
-    await saveRecord(p, "tasks", id, {
-      title: `Collection follow-up Â· ${d.name}`,
-      assignedStaffId: d.assignedStaffId,
-      customerId: row.id,
-      leadId: "",
-      priority: "URGENT",
-      status: "PENDING",
-      dueDate: today(),
-      notes:
-        "Review the latest collection snapshot before contacting the customer.",
-    });
-    created++;
-  }
-  return {
-    created,
-    cursor: snap.docs.at(-1)?.id || null,
-    done: snap.size < 25,
-  };
 });
 export const refreshOverdue = onCall(async (request) => {
   await actor(request, true);
