@@ -157,7 +157,7 @@ function Workflow({ kind }: { kind: string }) {
                   {kind === "followUps"
                     ? (r.notes && !String(r.notes).startsWith("Automatically created") ? r.notes : "")
                     : kind === "tasks" && String(r.title || "").startsWith("Collect ")
-                    ? `Combined amount to collect: ${String(r.notes || "").match(/Combined unpaid amount ([0-9.]+)/)?.[1] || "check Collections"}`
+                    ? `Combined amount to collect: ${String(r.notes || "").match(/Combined unpaid amount ([0-9.]+)/)?.[1] || "check Collections"}${r.staffNote ? ` · Staff message: ${r.staffNote}` : ""}`
                     : r.product || r.objective || (kind === "tasks" ? r.staffNote || "" : r.notes) || "Keep the next step clear."}
                 </p>
                 <div className="record-meta">

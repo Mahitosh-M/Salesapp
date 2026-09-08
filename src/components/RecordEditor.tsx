@@ -103,6 +103,7 @@ export function RecordEditor({
     ),
     ...record,
     ...preset,
+    ...(collectionTask ? { notes: "" } : {}),
   }));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
