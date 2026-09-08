@@ -188,6 +188,7 @@ export async function saveRecord(
     }
     const after: Data = {
       ...d,
+      ...(kind === "followUps" ? { branchId: owner.data()?.branchId || "" } : {}),
       ...(kind === "tasks" && (!before || before.branchId !== undefined || p.role === "Admin") ? { branchId: owner.data()?.branchId || "" } : {}),
       createdOn: before?.createdOn || serverTimestamp(),
       submittedAt: serverTimestamp(),

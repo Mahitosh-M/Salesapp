@@ -138,7 +138,7 @@ function Workflow({ kind }: { kind: string }) {
       ) : (
         <div className="record-list">
           {rows.map((r) => (
-            <article className="record-card" key={r.id}>
+            <article className={`record-card ${kind === "followUps" ? `followup-card status-${String(r.status || "").toLowerCase()}` : ""}`} key={r.id}>
               <div className="record-main">
                 <div className="row-between">
                   <Badge value={r.priority || "NORMAL"} />
@@ -152,7 +152,9 @@ function Workflow({ kind }: { kind: string }) {
                 {kind === "collectionPromises" && r.status === "UNREACHABLE" && <small>DAYS UNREACHABLE: {r.unreachableDays || 1}</small>}
                 {kind === "followUps" && r.customerId && (() => { const c = customers.rows.find((x) => x.id === r.customerId); const days = c?.lastOrderDate ? Math.max(0, Math.floor((Date.parse(today()+"T00:00:00Z") - Date.parse(String(c.lastOrderDate)+"T00:00:00Z"))/86400000)) : null; return <small>Last order: {days === null ? "unknown" : `${days} days`}{r.unreachableDays ? ` ? DAYS UNREACHABLE: ${r.unreachableDays}` : ""}</small>; })()}
                 <p>
-                  {kind === "tasks" && String(r.title || "").startsWith("Collect ")
+                  {kind === "followUps"
+                    ? (r.notes && !String(r.notes).startsWith("Automatically created") ? r.notes : "")
+                    : kind === "tasks" && String(r.title || "").startsWith("Collect ")
                     ? `Combined amount to collect: ${String(r.notes || "").match(/Combined unpaid amount ([0-9.]+)/)?.[1] || "check Collections"}`
                     : r.product || r.objective || (kind === "tasks" ? r.staffNote || "" : r.notes) || "Keep the next step clear."}
                 </p>
