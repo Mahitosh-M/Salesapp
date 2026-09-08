@@ -172,7 +172,7 @@ export const saveTarget = onCall(async (request) => {
 });
 export const refreshCisStaffDirectory = onCall(async (request) => {
   await actor(request, true);
-  const users = await salesDb.collection("users").where("role", "==", "Staff").get();
+  const users = await salesDb.collection("users").where("role", "==", "Staff").limit(100).get();
   const batch = salesDb.batch();
   users.docs.forEach((doc) => { const u = doc.data(); const token = u.cisDirectoryToken || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`; batch.set(salesDb.doc(`cisStaffDirectoryMap/${token}`), { staffId: doc.id, branchId: u.branchId || "", active: u.active !== false }); batch.set(salesDb.doc(`cisStaffDirectory/${u.branchId}/staff/${token}`), { name: u.name || "" }); });
   await batch.commit();
