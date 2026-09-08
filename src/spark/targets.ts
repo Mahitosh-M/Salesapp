@@ -26,7 +26,7 @@ const completeSales = (s: Data | undefined): number | null =>
     ? s.totalSales
     : null;
 export async function rebuildTargets(month: string) {
-  const [settings, mappings, monthly, business, invoice, salesOrders] = await Promise.all([
+  const [settings, mappings, monthly, business, invoice, salesOrders, incentivePlans, payments] = await Promise.all([
     allRows("targets", ["month", "==", month]),
     allRows("monthlyAssignments", ["month", "==", month]),
     allRows("adminCis_customerMonthlySnapshots", [
@@ -37,6 +37,8 @@ export async function rebuildTargets(month: string) {
     salesDb.doc(`adminCis_businessMonthlySnapshots/${month}`).get(),
     salesDb.doc(`adminInvoiceTargets/${month}`).get(),
     allRows("staffSalesOrders", ["month", "==", month]),
+    allRows("incentivePlans", ["month", "==", month]),
+    allRows("adminCis_payments"),
   ]);
   const byCustomer = new Map(
     monthly.map((r) => [r.payload.customerId, r.payload]),
@@ -125,4 +127,17 @@ export async function rebuildTargets(month: string) {
     updatedAt: now,
   });
   await batch.commit();
+  for (const plan of incentivePlans) {
+    const credited = salesOrders.filter((order) => order.attributionStatus === "STAFF_CREDITED" && order.assignedStaffId === plan.staffId);
+    const achieved = credited.reduce((sum, order) => sum + Number(order.amount || 0), 0);
+    const slabs = Array.isArray(plan.slabs) ? [...plan.slabs].sort((a: any, b: any) => Number(a.from || 0) - Number(b.from || 0)) : [];
+    const slab = [...slabs].reverse().find((s: any) => achieved >= Number(s.from || 0));
+    const eligible = achieved >= Number(plan.minimumTarget || 0) && slab;
+    const paymentByInvoice = new Map<string, number>();
+    for (const payment of payments) if (payment.invoiceId) paymentByInvoice.set(String(payment.invoiceId), (paymentByInvoice.get(String(payment.invoiceId)) || 0) + Number(payment.amountAppliedToInvoice ?? payment.amount ?? 0));
+    const rows = eligible ? credited.map((order) => ({ ...order, incentive: Number(order.profit || 0) * Number(slab.percentage || 0) / 100, paid: Boolean(order.paid) || (paymentByInvoice.get(String(order.invoiceId)) || 0) >= Number(order.amount || 0) })) : [];
+    const locked = rows.reduce((sum, row) => sum + row.incentive, 0);
+    const released = rows.filter((row) => row.paid).reduce((sum, row) => sum + row.incentive, 0);
+    await salesDb.doc(`staffIncentiveProgress/${plan.staffId}_${month}`).set({ staffId: plan.staffId, staffName: plan.staffName || "", month, minimumTarget: Number(plan.minimumTarget), achieved, activePercentage: eligible ? Number(slab.percentage || 0) : 0, locked, released, awaitingPayment: locked - released, eligible: Boolean(eligible), updatedAt: now });
+  }
 }

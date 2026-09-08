@@ -165,6 +165,20 @@ export const saveTarget = onCall(async (request) => {
   await rebuildTargets(d.month);
   return { ok: true };
 });
+export const saveIncentivePlan = onCall(async (request) => {
+  await actor(request, true);
+  const d = request.data;
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(d.month) || typeof d.minimumTarget !== "number" || d.minimumTarget <= 0 || !Array.isArray(d.slabs) || !d.slabs.length)
+    throw new HttpsError("invalid-argument", "Enter a month, minimum target, and at least one slab");
+  const staffId = requireId(d.staffId);
+  const staff = (await salesDb.doc(`users/${staffId}`).get()).data();
+  if (!staff?.active || staff.role !== "Staff") throw new HttpsError("invalid-argument", "Select an active Staff account");
+  const slabs = d.slabs.map((s: Data) => ({ from: Number(s.from), percentage: Number(s.percentage) })).filter((s: Data) => Number.isFinite(s.from) && s.from >= 0 && Number.isFinite(s.percentage) && s.percentage >= 0 && s.percentage <= 100);
+  if (!slabs.length) throw new HttpsError("invalid-argument", "Enter valid slab amounts and percentages");
+  await salesDb.doc(`incentivePlans/${staffId}_${d.month}`).set({ staffId, staffName: staff.name || "", month: d.month, minimumTarget: d.minimumTarget, slabs, updatedAt: new Date().toISOString() });
+  await rebuildTargets(d.month);
+  return { ok: true };
+});
 export const saveSettings = onCall(async (request) => {
   await actor(request, true);
   const d = request.data;

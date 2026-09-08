@@ -42,6 +42,13 @@ export async function storeInvoiceOrder(
   const lastOrderRef = salesDb.doc(`customerOrderDates/${input.customerId}`);
   const orderRef = salesDb.doc(`staffSalesOrders/${invoiceId}`);
   const customerRef = salesDb.doc(`staffCustomers/${input.customerId}`);
+  const manualEmail = typeof input.salesStaffEmail === "string" ? input.salesStaffEmail.trim().toLowerCase() : "";
+  const manualSnapshot = manualEmail
+    ? await salesDb.collection("users").where("email", "==", manualEmail).limit(1).get()
+    : undefined;
+  const manualDoc = manualSnapshot?.docs[0];
+  const manualStaff = manualDoc?.data();
+  const manualStaffId = manualDoc?.id || "";
   return salesDb.runTransaction(async (tx) => {
     const signal = await tx.get(signalRef);
     const lastOrder = await tx.get(lastOrderRef);
@@ -51,14 +58,19 @@ export async function storeInvoiceOrder(
     const candidate = signal.data() || {};
     const keepCredit = previous.attributionStatus === "STAFF_CREDITED";
     const matches = !keepCredit && signalMatchesInvoice(candidate, input);
+    const manualCredit = !keepCredit && manualStaffId && manualStaff?.role === "Staff" && manualStaff?.active !== false;
     const assignedStaffId = keepCredit
       ? previous.assignedStaffId
-      : matches
+      : manualCredit
+        ? manualStaffId
+        : matches
         ? candidate.assignedStaffId
         : "";
     const assignedStaffName = keepCredit
       ? previous.assignedStaffName
-      : matches
+      : manualCredit
+        ? (manualStaff?.name || input.salesStaffName || "")
+        : matches
         ? candidate.assignedStaffName
         : "";
     const attributionStatus = assignedStaffId
@@ -67,12 +79,16 @@ export async function storeInvoiceOrder(
     const month = String(input.date).slice(0, 7);
     const sourceActionType = keepCredit
       ? previous.sourceActionType
-      : matches
+      : manualCredit
+        ? "INVOICE_ASSIGNMENT"
+        : matches
         ? candidate.sourceType
         : "";
     const sourceActionId = keepCredit
       ? previous.sourceActionId
-      : matches
+      : manualCredit
+        ? ""
+        : matches
         ? candidate.sourceId
         : "";
     tx.set(orderRef, {
@@ -83,6 +99,8 @@ export async function storeInvoiceOrder(
       orderDate: input.date,
       month,
       amount: Number(input.totalSales),
+      profit: Number(input.totalProfit) || 0,
+      paid: String(input.status || "").toUpperCase() === "PAID",
       branchId: input.shopId || customer.data()?.branchId || "",
       assignedStaffId,
       assignedStaffName,

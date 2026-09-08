@@ -103,7 +103,7 @@ export const sourceSpecs = [
     ],
     timestamps: ["updatedAt"],
   },
-  { name: "invoices", fields: ["customerId", "totalSales", "date", "dueDate", "savedDueDate", "finalPcCutoffDate", "bufferDaysAtInvoice", "tierAtInvoice", "invoiceNumber", "invoiceType", "status", "recordStatus", "isOpeningBalance", "updatedAt", "createdAt", "shopId", "branchSystemVersion"], timestamps: ["updatedAt"] },
+  { name: "invoices", fields: ["customerId", "totalSales", "totalProfit", "date", "dueDate", "savedDueDate", "finalPcCutoffDate", "bufferDaysAtInvoice", "tierAtInvoice", "invoiceNumber", "invoiceType", "status", "recordStatus", "isOpeningBalance", "updatedAt", "createdAt", "shopId", "salesStaffEmail", "salesStaffName", "salesStaffId", "branchSystemVersion"], timestamps: ["updatedAt"] },
   { name: "payments", fields: ["customerId", "invoiceId", "amount", "amountAppliedToInvoice", "cashDiscount", "updatedAt", "createdAt"], timestamps: ["updatedAt"] },
   { name: "settings", fields: ["key", "paymentBuffers", "creditDays", "updatedAt"], timestamps: ["updatedAt"] },
 ] as const;

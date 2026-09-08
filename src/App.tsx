@@ -49,6 +49,7 @@ const CustomerDetail = lazy(() =>
 const Workflows = lazy(() => import("./pages/Workflows"));
 const Collections = lazy(() => import("./pages/Collections"));
 const Targets = lazy(() => import("./pages/Targets"));
+const Incentives = lazy(() => import("./pages/Incentives"));
 const Performance = lazy(() => import("./pages/Performance"));
 const Marketing = lazy(() => import("./pages/Marketing"));
 const Sync = lazy(() => import("./pages/Sync"));
@@ -76,8 +77,11 @@ export default function App() {
           <Route path="customers" element={<Customers />} />
           <Route path="customers/:id" element={<CustomerDetail />} />
           <Route path="work/:kind" element={<WorkflowGuard />} />
-          <Route path="collections" element={<Collections />} />
+          <Route path="collections" element={<CollectionsGuard />} />
           <Route path="targets" element={<Targets />} />
+          <Route element={<AdminOnly />}>
+            <Route path="incentives" element={<Incentives />} />
+          </Route>
           <Route path="performance" element={<Performance />} />
           <Route path="more" element={<More />} />
           <Route element={<AdminOnly />}>
@@ -103,9 +107,13 @@ function WorkflowGuard() {
   const { profile } = useAuth();
   const location = useLocation();
   const kind = location.pathname.split("/").pop()!;
-  if (!modules[kind] || (modules[kind].adminOnly && profile?.role !== "Admin"))
+  if (!modules[kind] || (modules[kind].adminOnly && profile?.role !== "Admin") ||
+    (profile?.role === "Staff" && kind === "followUps"))
     return <Navigate to="/" replace />;
   return <Workflows />;
+}
+function CollectionsGuard() {
+  return useAuth().profile?.role === "Staff" ? <Navigate to="/work/tasks" replace /> : <Collections />;
 }
 const mainLinks = [
   ["/", "Today", LayoutDashboard],
@@ -150,7 +158,7 @@ function Layout() {
         <nav>
           {links(mainLinks)}
           <div className="nav-caption">WORK & GROWTH</div>
-          {links(workLinks)}
+          {links(profile?.role === "Staff" ? workLinks.filter(([to]) => to !== "/collections" && to !== "/work/followUps") : workLinks)}
           <NavLink to="/more">
             <Ellipsis size={19} />
             More tools
@@ -162,6 +170,7 @@ function Layout() {
                 ["/marketing", "Marketing", Megaphone],
                 ["/sync", "CISapp Sync", RefreshCw],
                 ["/settings", "People & settings", Settings],
+                ["/incentives", "Incentives", Wallet],
                 ["/guide", "Admin guide", BookOpen],
               ])}
             </>
@@ -248,13 +257,14 @@ function More() {
       <p className="subtle">Everything you need to keep work moving.</p>
       <div className="more-grid">
         {[
-          ...workLinks,
+          ...(profile?.role === "Staff" ? workLinks.filter(([to]) => to !== "/collections" && to !== "/work/followUps") : workLinks),
           ...extra,
           ...(profile?.role === "Admin"
             ? [
                 ["/marketing", "Marketing", Megaphone],
                 ["/sync", "CISapp Sync", RefreshCw],
                 ["/settings", "People & settings", Settings],
+                ["/incentives", "Incentives", Wallet],
                 ["/guide", "Admin guide", BookOpen],
               ]
             : []),
