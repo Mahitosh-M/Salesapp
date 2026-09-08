@@ -42,13 +42,15 @@ export async function storeInvoiceOrder(
   const lastOrderRef = salesDb.doc(`customerOrderDates/${input.customerId}`);
   const orderRef = salesDb.doc(`staffSalesOrders/${invoiceId}`);
   const customerRef = salesDb.doc(`staffCustomers/${input.customerId}`);
+  const directoryToken = typeof input.salesStaffDirectoryToken === "string" ? input.salesStaffDirectoryToken : "";
+  const directoryMap = directoryToken ? (await salesDb.doc(`cisStaffDirectoryMap/${directoryToken}`).get()).data() : undefined;
   const manualEmail = typeof input.salesStaffEmail === "string" ? input.salesStaffEmail.trim().toLowerCase() : "";
   const manualSnapshot = manualEmail
     ? await salesDb.collection("users").where("email", "==", manualEmail).limit(1).get()
     : undefined;
   const manualDoc = manualSnapshot?.docs[0];
   const manualStaff = manualDoc?.data();
-  const manualStaffId = manualDoc?.id || "";
+  const manualStaffId = directoryMap?.active ? directoryMap.staffId : (manualDoc?.id || "");
   return salesDb.runTransaction(async (tx) => {
     const signal = await tx.get(signalRef);
     const lastOrder = await tx.get(lastOrderRef);

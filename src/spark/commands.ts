@@ -75,6 +75,8 @@ export const saveUser = onCall(async (request) => {
     });
     uid = u.uid;
   }
+  const existing = await salesDb.doc(`users/${uid}`).get();
+  const directoryToken = existing.data()?.cisDirectoryToken || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
   await salesDb.doc(`users/${uid}`).set({
     uid,
     name: d.name.trim(),
@@ -82,8 +84,11 @@ export const saveUser = onCall(async (request) => {
     role: d.role,
     active: d.active !== false,
     branchId: typeof d.branchId === "string" ? d.branchId : "",
+    cisDirectoryToken: directoryToken,
     updatedAt: new Date().toISOString(),
   });
+  await salesDb.doc(`cisStaffDirectoryMap/${directoryToken}`).set({ staffId: uid, branchId: d.branchId, active: d.active !== false && d.role === "Staff" });
+  await salesDb.doc(`cisStaffDirectory/${d.branchId}/staff/${directoryToken}`).set({ name: d.name.trim() });
   const assignedCustomers = d.role === "Staff" ? await assignUnassignedCustomersForStaff(uid, d.branchId) : 0;
   return { uid, assignedCustomers };
 });
@@ -164,6 +169,14 @@ export const saveTarget = onCall(async (request) => {
   });
   await rebuildTargets(d.month);
   return { ok: true };
+});
+export const refreshCisStaffDirectory = onCall(async (request) => {
+  await actor(request, true);
+  const users = await salesDb.collection("users").where("role", "==", "Staff").get();
+  const batch = salesDb.batch();
+  users.docs.forEach((doc) => { const u = doc.data(); const token = u.cisDirectoryToken || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`; batch.set(doc.ref, { cisDirectoryToken: token }, { merge: true }); batch.set(salesDb.doc(`cisStaffDirectoryMap/${token}`), { staffId: doc.id, branchId: u.branchId || "", active: u.active !== false }); batch.set(salesDb.doc(`cisStaffDirectory/${u.branchId}/staff/${token}`), { name: u.name || "" }); });
+  await batch.commit();
+  return { count: users.size };
 });
 export const saveIncentivePlan = onCall(async (request) => {
   await actor(request, true);

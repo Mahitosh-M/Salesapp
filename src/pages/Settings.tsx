@@ -104,6 +104,7 @@ export default function Settings() {
           initial password. Customer assignments are managed on each customer
           page.
         </p>
+        <button className="secondary" onClick={async () => { try { const result = await command("refreshCisStaffDirectory", {}); setSuccess(`${result.count} Salesapp Staff names are available in CISapp invoices.`); } catch (e) { setError((e as Error).message); } }}>Refresh CISapp Staff names</button>
       </Panel>
       {edit !== undefined && (
         <UserForm
