@@ -173,6 +173,10 @@ export async function saveRecord(
         d.unreachableSince = start;
         d.unreachableDays = Math.max(1, Math.floor((Date.parse(today()+"T00:00:00Z") - Date.parse(String(start)+"T00:00:00Z"))/86400000) + 1);
         d.dueDate = new Date(Date.parse(today()+"T00:00:00Z") + 86400000).toISOString().slice(0, 10);
+      } else if (d.status === "PROMISED") {
+        if (!Number.isFinite(Number(d.collectionAmount)) || Number(d.collectionAmount) <= 0 || !/^\d{4}-\d{2}-\d{2}$/.test(String(d.collectionPromiseDate)))
+          throw new HttpsError("invalid-argument", "Enter a promised amount and date");
+        d.dueDate = d.collectionPromiseDate;
       } else if (d.status !== "UNREACHABLE") {
         d.unreachableSince = "";
         if (d.status !== "PROMISED") d.unreachableDays = "";

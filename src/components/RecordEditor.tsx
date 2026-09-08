@@ -84,7 +84,7 @@ export function RecordEditor({
   const adminAssigned =
     profile?.role === "Staff" && Boolean(record) && record?.createdBy !== profile.uid;
   const collectionTask = kind === "tasks" && Boolean(record) && String(record?.title || "").startsWith("Collect ");
-  const collectionStatuses = ["UNREACHABLE", "PROMISED", "PAID"];
+  const collectionStatuses = ["PENDING", "UNREACHABLE", "PROMISED", "PAID"];
   const staffProgressFields = new Set(["outcome", "nextFollowUp", "notes"]);
   const [form, setForm] = useState<Data>(() => ({
     title: "",

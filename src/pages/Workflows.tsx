@@ -138,7 +138,7 @@ function Workflow({ kind }: { kind: string }) {
       ) : (
         <div className="record-list">
           {rows.map((r) => (
-            <article className={`record-card ${kind === "followUps" ? `followup-card status-${String(r.status || "").toLowerCase()}` : ""}`} key={r.id}>
+            <article className={`record-card ${(kind === "followUps" || (kind === "tasks" && String(r.title || "").startsWith("Collect "))) ? `followup-card status-${String(r.status || "").toLowerCase()}` : ""}`} key={r.id}>
               <div className="record-main">
                 <div className="row-between">
                   <Badge value={r.priority || "NORMAL"} />
@@ -152,6 +152,7 @@ function Workflow({ kind }: { kind: string }) {
                 {kind === "collectionPromises" && r.status === "UNREACHABLE" && <small>DAYS UNREACHABLE: {r.unreachableDays || 1}</small>}
                 {kind === "tasks" && String(r.title || "").startsWith("Collect ") && r.status === "UNREACHABLE" && <small className="last-order-highlight">DAYS UNREACHABLE: {r.unreachableDays || 1}</small>}
                 {kind === "tasks" && String(r.title || "").startsWith("Collect ") && r.status === "PROMISED" && <small className="last-order-highlight">Promised: {r.collectionAmount || ""} by {r.collectionPromiseDate || ""}</small>}
+                {kind === "tasks" && String(r.title || "").startsWith("Collect ") && r.status === "PROMISED" && r.collectionPromiseDate && r.collectionPromiseDate < today() && <small className="last-order-highlight">PROMISE OVERDUE: {Math.floor((Date.parse(today()+"T00:00:00Z") - Date.parse(String(r.collectionPromiseDate)+"T00:00:00Z"))/86400000)} days</small>}
                 {kind === "followUps" && r.customerId && (() => { const c = customers.rows.find((x) => x.id === r.customerId); const days = c?.lastOrderDate ? Math.max(0, Math.floor((Date.parse(today()+"T00:00:00Z") - Date.parse(String(c.lastOrderDate)+"T00:00:00Z"))/86400000)) : null; return <small className="last-order-highlight">Last order: {days === null ? "unknown" : `${days} days`}{r.unreachableDays ? ` ? DAYS UNREACHABLE: ${r.unreachableDays}` : ""}</small>; })()}
                 <p>
                   {kind === "followUps"
