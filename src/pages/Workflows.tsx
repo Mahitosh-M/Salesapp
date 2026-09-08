@@ -46,6 +46,7 @@ function Workflow({ kind }: { kind: string }) {
     (r) =>
       (status === "ALL" || r.status === status) &&
       !(kind === "collectionPromises" && profile?.role === "Staff" && r.status === "PAID") && !(kind === "tasks" && profile?.role === "Staff" && String(r.title || "").startsWith("Collect ") && r.status === "PAID") &&
+      !(kind === "visits" && String(r.id || "").startsWith("auto10_")) &&
       [r.title, r.notes, r.product, r.phone]
         .join(" ")
         .toLowerCase()
