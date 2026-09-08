@@ -400,6 +400,10 @@ export async function refreshCustomer(id: string) {
     salesDb.doc(`customerOrderDates/${id}`).get(),
   ]);
   const assignment = await automaticAssignment(id, c.data() || {}, assignmentDoc.data() || {});
+  if (assignment.assignedStaffId && !(assignment as Data).assignedStaffName) {
+    const staff = await salesDb.doc(`users/${assignment.assignedStaffId}`).get();
+    if (staff.data()?.name) (assignment as Data).assignedStaffName = staff.data()!.name;
+  }
   const data = materializeCustomer(
     id,
     c.data()?.payload || null,

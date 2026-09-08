@@ -139,6 +139,7 @@ export function materializeCustomer(
       area: customer?.area || "",
       branchId: assignment.branchId || customer?.branchId || "",
       assignedStaffId: owner,
+      assignedStaffName: assignment.assignedStaffName || "",
       active,
       lastOrderDate: orders.lastOrderDate || null,
       lastOrderCheckedAt: orders.checkedAt || null,
@@ -150,6 +151,7 @@ export function materializeCustomer(
       customerId: id,
       name: customer?.name || "Source customer unavailable",
       assignedStaffId: owner,
+      assignedStaffName: assignment.assignedStaffName || "",
       active,
       outstandingAmount: active
         ? money(customer?.totalOutstandingAmount)
