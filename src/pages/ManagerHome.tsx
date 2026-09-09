@@ -16,6 +16,33 @@ import { type Row } from "../services/sales";
 import { collectionDue } from "../../shared/collections";
 import { today } from "../../shared/schema";
 
+const dayCount = (date: string) =>
+  /^\d{4}-\d{2}-\d{2}$/.test(date)
+    ? Math.max(
+        0,
+        Math.floor(
+          (Date.parse(`${today()}T00:00:00Z`) -
+            Date.parse(`${date}T00:00:00Z`)) /
+            86400000,
+        ),
+      )
+    : 0;
+const shortDate = (date: string) =>
+  /^\d{4}-\d{2}-\d{2}$/.test(date)
+    ? new Date(`${date}T00:00:00Z`)
+        .toLocaleDateString("en-IN", { day: "2-digit", month: "short" })
+        .toUpperCase()
+    : date || "NOT SET";
+const collectionTaskFacts = (task: Row) => ({
+  amount: Number(
+    String(task.notes || "").match(/Combined unpaid amount ([0-9.]+)/)?.[1] ||
+      0,
+  ),
+  due:
+    String(task.notes || "").match(/Due dates: ([0-9-]+)/)?.[1] ||
+    String(task.dueDate || ""),
+});
+
 export default function ManagerHome() {
   const { profile, logout } = useAuth();
   const [tab, setTab] = useState("tasks");
@@ -36,7 +63,7 @@ export default function ManagerHome() {
     "staffCustomers",
     [],
     undefined,
-    tab === "followups",
+    tab === "followups" || tab === "tasks",
   );
   const [edit, setEdit] = useState<Row | null | undefined>();
   const followups = tasks.rows.filter(
@@ -53,12 +80,6 @@ export default function ManagerHome() {
   const collectionTasks = tasks.rows.filter((task) =>
     String(task.title || "").startsWith("Collect "),
   ).length;
-  const collectionStatus = (task: Row) =>
-    task.status === "UNREACHABLE"
-      ? `UNREACHABLE DAYS: ${task.unreachableDays || 1}`
-      : task.status === "PROMISED"
-        ? `PROMISED: ${money(task.collectionAmount)} by ${task.collectionPromiseDate || "date not set"}`
-        : "";
   return (
     <main className="manager-workspace">
       <Header
@@ -124,33 +145,68 @@ export default function ManagerHome() {
           <Panel title="Branch tasks">
             {tasks.rows.length ? (
               <div className="record-list">
-                {tasks.rows.map((task) => (
-                  <article
-                    className={`record-card followup-card status-${String(task.status || "pending").toLowerCase()}`}
-                    key={task.id}
-                  >
-                    <div>
-                      <Badge value={task.status} />
-                      <h3>{task.title}</h3>
-                      {collectionStatus(task) && (
-                        <p className="last-order-highlight">
-                          {collectionStatus(task)}
+                {tasks.rows.map((task) => {
+                  const isCollection = String(task.title || "").startsWith(
+                    "Collect ",
+                  );
+                  const facts = collectionTaskFacts(task);
+                  const customer = staffCustomers.rows.find(
+                    (row) => row.id === task.customerId,
+                  );
+                  const lastOrderDays = customer?.lastOrderDate
+                    ? dayCount(String(customer.lastOrderDate))
+                    : null;
+                  return (
+                    <article
+                      className={`record-card followup-card status-${String(task.status || "pending").toLowerCase()}`}
+                      key={task.id}
+                    >
+                      <div>
+                        <Badge value={task.status} />
+                        <h3>{task.title}</h3>
+                        {isCollection && (
+                          <div className="task-fact-box collection-facts">
+                            <b>AMOUNT: {money(facts.amount)}</b>
+                            <b>DUE: {shortDate(facts.due)}</b>
+                            <b>DAYS: {dayCount(facts.due)} DAYS</b>
+                          </div>
+                        )}
+                        {task.sourceType === "followUps" && (
+                          <div className="task-fact-box followup-fact">
+                            <b>
+                              LAST ORDER:{" "}
+                              {lastOrderDays === null
+                                ? "UNKNOWN"
+                                : `${lastOrderDays} DAYS`}
+                            </b>
+                          </div>
+                        )}
+                        {isCollection && task.status === "UNREACHABLE" && (
+                          <p className="last-order-highlight">
+                            DAYS UNREACHABLE: {task.unreachableDays || 1}
+                          </p>
+                        )}
+                        {isCollection && task.status === "PROMISED" && (
+                          <p className="last-order-highlight">
+                            PROMISED: {money(task.collectionAmount)} BY{" "}
+                            {shortDate(String(task.collectionPromiseDate || ""))}
+                          </p>
+                        )}
+                        <p>
+                          {task.assignedStaffName} - Due {task.dueDate}
                         </p>
+                        {task.staffNote || task.notes ? (
+                          <p>{task.staffNote || task.notes}</p>
+                        ) : null}
+                      </div>
+                      {task.sourceType === "ADMIN" && (
+                        <button onClick={() => setEdit(task)}>
+                          Update / delegate
+                        </button>
                       )}
-                      <p>
-                        {task.assignedStaffName} · Due {task.dueDate}
-                      </p>
-                      {task.staffNote || task.notes ? (
-                        <p>{task.staffNote || task.notes}</p>
-                      ) : null}
-                    </div>
-                    {task.sourceType === "ADMIN" && (
-                      <button onClick={() => setEdit(task)}>
-                        Update / delegate
-                      </button>
-                    )}
-                  </article>
-                ))}
+                    </article>
+                  );
+                })}
               </div>
             ) : (
               <Empty
@@ -197,17 +253,19 @@ export default function ManagerHome() {
                 key={row.id}
               >
                 <h3>{row.title}</h3>
-                <p className="followup-highlight last-order-highlight">
-                  Last order:{" "}
-                  {(() => {
-                    const c = staffCustomers.rows.find(
-                      (x) => x.id === row.customerId,
-                    );
-                    return c?.lastOrderDate
-                      ? `${Math.max(0, Math.floor((Date.parse(today() + "T00:00:00Z") - Date.parse(String(c.lastOrderDate) + "T00:00:00Z")) / 86400000))} days`
-                      : "unknown";
-                  })()}
-                </p>
+                <div className="task-fact-box followup-fact">
+                  <b>
+                    LAST ORDER:{" "}
+                    {(() => {
+                      const c = staffCustomers.rows.find(
+                        (x) => x.id === row.customerId,
+                      );
+                      return c?.lastOrderDate
+                        ? `${Math.max(0, Math.floor((Date.parse(today() + "T00:00:00Z") - Date.parse(String(c.lastOrderDate) + "T00:00:00Z")) / 86400000))} DAYS`
+                        : "UNKNOWN";
+                    })()}
+                  </b>
+                </div>
                 <Badge value={row.status} />
                 {row.staffNote || row.notes ? (
                   <p>{row.staffNote || row.notes}</p>
@@ -226,19 +284,29 @@ export default function ManagerHome() {
               due: collectionDue(customer.invoices || [], today()),
             }))
             .filter((row) => row.due.amount > 0)
-            .map(({ customer, due }) => (
-              <article
-                className="record-card followup-card status-promised"
-                key={customer.id}
-              >
-                <div>
-                  <h3>{customer.name}</h3>
-                  <p className="last-order-highlight">
-                    {money(due.amount)} to collect
-                  </p>
-                </div>
-              </article>
-            ))}
+            .map(({ customer, due }) => {
+              const dueDate = String(
+                due.invoices
+                  .map((invoice) => invoice.dueDate)
+                  .filter(Boolean)
+                  .sort()[0] || "",
+              );
+              return (
+                <article
+                  className="record-card followup-card status-promised"
+                  key={customer.id}
+                >
+                  <div>
+                    <h3>{customer.name}</h3>
+                    <div className="task-fact-box collection-facts">
+                      <b>AMOUNT: {money(due.amount)}</b>
+                      <b>DUE: {shortDate(dueDate)}</b>
+                      <b>DAYS: {dayCount(dueDate)} DAYS</b>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           <PageEnd state={customers} />
         </Panel>
       )}
