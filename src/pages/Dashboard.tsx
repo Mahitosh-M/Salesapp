@@ -11,6 +11,8 @@ import {
   Users,
   Layers,
   ArrowRight,
+  LockKeyhole,
+  Unlock,
 } from "lucide-react";
 import { useAuth, useRows, useDocument, useLiveDocument } from "../hooks";
 import {
@@ -34,6 +36,8 @@ export function Today() {
   const { profile } = useAuth();
   const month = today().slice(0, 7);
   const target = useLiveDocument("staffTargetProgress", `${profile?.uid || "pending"}_${month}`);
+  const incentive = useLiveDocument("staffIncentiveProgress", `${profile?.uid || "pending"}_${month}`);
+  const claim = useLiveDocument("incentiveClaims", `${profile?.uid || "pending"}_${month}`);
   const queue = useRows(
     "tasks",
     [
@@ -45,6 +49,8 @@ export function Today() {
   const performance = useRows("staffPerformance", [["month", "==", month]]);
   const [quick, setQuick] = useState(false);
   const [edit, setEdit] = useState<any>();
+  const [claimingIncentive, setClaimingIncentive] = useState(false);
+  const [incentiveError, setIncentiveError] = useState("");
   const dayWork = useRows("staffDailyWork", [["day", "==", today()]]);
   const openWork = useRows("staffWorkSummaries");
   const dayCounts = dayWork.rows[0]?.counts || {};
@@ -89,6 +95,7 @@ export function Today() {
           performance.error ||
           dayWork.error ||
           openWork.error
+          || incentive.error || claim.error || incentiveError
         }
       />
       <section className="target-hero">
@@ -129,6 +136,14 @@ export function Today() {
           </div>
         </div>
       </section>
+      <Panel title="My incentive">
+        <div className="metrics-grid">
+          <div><small>Total earned</small><b>{money(incentive.row?.locked)}</b></div>
+          <div><small><LockKeyhole size={14} /> Locked until invoices are paid</small><b>{money(incentive.row?.awaitingPayment)}</b></div>
+          <div><small><Unlock size={14} /> Available to claim</small><b>{money(Math.max(0, Number(incentive.row?.released || 0) - Number(claim.row?.paidAmount || 0)))}</b></div>
+        </div>
+        {claim.row?.status === "REQUESTED" ? <p className="notice">Your claim for {money(claim.row.requestedAmount)} is waiting for Admin approval.</p> : Number(incentive.row?.released || 0) > Number(claim.row?.paidAmount || 0) ? <button disabled={claimingIncentive} onClick={async () => { setClaimingIncentive(true); setIncentiveError(""); try { await (await import("../services/sales")).command("requestIncentiveClaim", { month }); } catch (error) { setIncentiveError((error as Error).message); } finally { setClaimingIncentive(false); } }}>{claimingIncentive ? "Sending claim…" : "Claim available incentive"}</button> : <p className="subtle">The lock opens when the related CISapp invoice payment is recorded.</p>}
+      </Panel>
       <div className="section-label">
         <h2>Today’s focus</h2>
         <span>Due today + overdue</span>

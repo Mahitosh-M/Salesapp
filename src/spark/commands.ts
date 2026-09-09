@@ -216,6 +216,56 @@ export const saveIncentivePlan = onCall(async (request) => {
   await rebuildTargets(d.month);
   return { ok: true };
 });
+export const requestIncentiveClaim = onCall(async (request) => {
+  const p = await actor(request);
+  const month = String(request.data.month || "");
+  if (p.role !== "Staff" || !/^\d{4}-(0[1-9]|1[0-2])$/.test(month))
+    throw new HttpsError("permission-denied", "Only Staff can request a current monthly incentive");
+  const [progress, existing] = await Promise.all([
+    salesDb.doc(`staffIncentiveProgress/${p.uid}_${month}`).get(),
+    salesDb.doc(`incentiveClaims/${p.uid}_${month}`).get(),
+  ]);
+  const released = Number(progress.data()?.released || 0);
+  const paidAmount = Number(existing.data()?.paidAmount || 0);
+  const available = Math.max(0, released - paidAmount);
+  if (!Number.isFinite(available) || available <= 0)
+    throw new HttpsError("failed-precondition", "No paid-invoice incentive is available to claim yet");
+  if (existing.data()?.status === "REQUESTED")
+    throw new HttpsError("failed-precondition", "Your current incentive claim is already waiting for Admin approval");
+  await salesDb.doc(`incentiveClaims/${p.uid}_${month}`).set({
+    staffId: p.uid,
+    staffName: p.name,
+    month,
+    status: "REQUESTED",
+    requestedAmount: available,
+    paidAmount,
+    requestedAt: new Date().toISOString(),
+    paidAt: existing.data()?.paidAt || "",
+    paidBy: existing.data()?.paidBy || "",
+    updatedAt: new Date().toISOString(),
+  });
+  return { requestedAmount: available };
+});
+export const markIncentiveClaimPaid = onCall(async (request) => {
+  const p = await actor(request, true);
+  const staffId = requireId(request.data.staffId);
+  const month = String(request.data.month || "");
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))
+    throw new HttpsError("invalid-argument", "Select a valid incentive month");
+  const ref = salesDb.doc(`incentiveClaims/${staffId}_${month}`);
+  const claim = await ref.get();
+  if (claim.data()?.status !== "REQUESTED")
+    throw new HttpsError("failed-precondition", "There is no pending incentive claim to mark paid");
+  await ref.set({
+    ...claim.data(),
+    status: "PAID",
+    paidAmount: Number(claim.data()?.paidAmount || 0) + Number(claim.data()?.requestedAmount || 0),
+    paidAt: new Date().toISOString(),
+    paidBy: p.uid,
+    updatedAt: new Date().toISOString(),
+  });
+  return { ok: true };
+});
 export const saveSettings = onCall(async (request) => {
   await actor(request, true);
   const d = request.data;
