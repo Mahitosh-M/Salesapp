@@ -38,15 +38,30 @@ export const syncCriticalCisapp = onCall(async (request) => {
   const kind = request.data.kind === "payments" ? "payments" : request.data.kind === "invoices" ? "invoices" : "";
   const id = requireId(request.data.id);
   const payload = request.data.payload;
+  const deleted = request.data.deleted === true;
   if (!kind || !payload || typeof payload !== "object") throw new HttpsError("invalid-argument", "Invalid critical CISapp record");
+  if (deleted && kind === "invoices") {
+    const existing = await salesDb.doc(`staffSalesOrders/${id}`).get();
+    const order = existing.data() || {};
+    const month = String(order.month || payload.date || "").slice(0, 7);
+    const customerId = String(order.customerId || payload.customerId || "");
+    await salesDb.doc(`staffSalesOrders/${id}`).delete();
+    await salesDb.doc(`adminCis_invoices/${id}`).delete();
+    if (/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) await rebuildTargets(month);
+    if (customerId) await refreshCollectionScheduleForCustomer(customerId);
+    return { status: "SUCCESS", kind, id, customerId, deleted: true };
+  }
   await salesDb.doc(`adminCis_${kind}/${id}`).set({ payload, fingerprint: "realtime", checkedAt: new Date().toISOString() }, { merge: true });
   const customerId = typeof payload.customerId === "string" ? payload.customerId : "";
   if (customerId) {
     if (kind === "invoices") {
+      const previous = await salesDb.doc(`staffSalesOrders/${id}`).get();
+      const previousMonth = String(previous.data()?.month || "");
       const stored = await import("./orderAttribution").then((m) => m.storeInvoiceOrder(id, payload, new Date().toISOString()));
       if (stored?.lastOrderChanged) await refreshCustomer(customerId);
       const month = typeof payload.date === "string" ? payload.date.slice(0, 7) : "";
       if (/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) await rebuildTargets(month);
+      if (previousMonth !== month && /^\d{4}-(0[1-9]|1[0-2])$/.test(previousMonth)) await rebuildTargets(previousMonth);
     } else {
       const order = await salesDb.doc(`staffSalesOrders/${id}`).get();
       const month = String(order.data()?.month || "");

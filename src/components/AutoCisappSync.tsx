@@ -60,7 +60,7 @@ export function AutoCisappSync() {
       const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
       const watch = (kind: "invoices" | "payments") => onSnapshot(
         query(collection(cisDb, kind), where("updatedAt", ">=", since)),
-        (snap) => { for (const change of snap.docChanges()) if (change.type !== "removed") void command("syncCriticalCisapp", { kind, id: change.doc.id, payload: change.doc.data() }); },
+        (snap) => { for (const change of snap.docChanges()) void command("syncCriticalCisapp", { kind, id: change.doc.id, payload: change.doc.data(), deleted: change.type === "removed" }); },
         () => undefined,
       );
       if (!stopped) { invoiceStop = watch("invoices"); paymentStop = watch("payments"); }
