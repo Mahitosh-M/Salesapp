@@ -163,7 +163,7 @@ export async function saveRecord(
     if (p.role === "Manager" && (
       kind !== "tasks" || !p.branchId || owner.data()?.branchId !== p.branchId ||
       !(owner.data()?.role === "Staff" || d.assignedStaffId === p.uid) ||
-      (before && (before.branchId !== p.branchId || before.sourceType !== "ADMIN"))
+      (before && ((before.branchId && before.branchId !== p.branchId) || before.sourceType !== "ADMIN"))
     )) throw new HttpsError("permission-denied", "Managers can assign tasks only inside their branch");
     if (p.role === "Staff" && before && before.createdBy !== p.uid && kind === "tasks" && d.notes)
       d.staffNote = d.notes;
@@ -205,7 +205,7 @@ export async function saveRecord(
     const after: Data = {
       ...d,
       ...(kind === "followUps" ? { branchId: owner.data()?.branchId || "" } : {}),
-      ...(kind === "tasks" && (!before || before.branchId !== undefined || p.role === "Admin") ? { branchId: owner.data()?.branchId || "" } : {}),
+      ...(kind === "tasks" && (!before || before.branchId !== undefined || p.role === "Admin" || p.role === "Manager") ? { branchId: owner.data()?.branchId || "" } : {}),
       createdOn: before?.createdOn || serverTimestamp(),
       submittedAt: serverTimestamp(),
       assignedStaffName: owner.data()?.name || d.assignedStaffId,
