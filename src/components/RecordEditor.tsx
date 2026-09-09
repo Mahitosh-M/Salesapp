@@ -194,7 +194,7 @@ export function RecordEditor({
             </label>
           )}
           {adminAssigned && kind === "tasks" && form.customerId && (
-            <label className="span-2"><span>Customer</span><input value={customers.rows.find((c) => c.id === form.customerId)?.name || "Customer"} disabled /></label>
+          <label className="span-2"><span>Customer</span><input value={customers.rows.find((c) => c.id === form.customerId)?.name || form.title || "Customer"} disabled /></label>
           )}
           {spec.fields
             .filter(
