@@ -13,8 +13,11 @@ import {
   Loading,
   PageEnd,
   when,
+  money,
 } from "../components/ui";
 import { command, readOne, type Row } from "../services/sales";
+const dayCount = (date: string) => /^\d{4}-\d{2}-\d{2}$/.test(date) ? Math.max(0, Math.floor((Date.parse(today()+"T00:00:00Z")-Date.parse(date+"T00:00:00Z"))/86400000)) : 0;
+const shortDate = (date: string) => /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(date+"T00:00:00Z").toLocaleDateString("en-IN",{day:"2-digit",month:"short"}).toUpperCase() : date;
 export default function Workflows() {
   const { kind = "tasks" } = useParams();
   return <Workflow key={kind} kind={kind} />;
@@ -150,6 +153,8 @@ function Workflow({ kind }: { kind: string }) {
                   </small>
                 </div>
                 <h3>{r.title}</h3>
+                {kind === "tasks" && String(r.title || "").startsWith("Collect ") && (() => { const amount=Number(String(r.notes||"").match(/Combined unpaid amount ([0-9.]+)/)?.[1] || 0); const due=String(r.notes||"").match(/Due dates: ([0-9-]+)/)?.[1] || String(r.dueDate||""); return <div className="task-fact-box collection-facts"><b>AMOUNT: {money(amount)}</b><b>DUE: {shortDate(due)}</b><b>DAYS: {dayCount(due)} DAYS</b></div>; })()}
+                {kind === "tasks" && r.sourceType === "followUps" && (() => { const c=customers.rows.find(x=>x.id===r.customerId); const days=c?.lastOrderDate ? dayCount(String(c.lastOrderDate)) : null; return <div className="task-fact-box followup-fact"><b>LAST ORDER: {days === null ? "UNKNOWN" : `${days} DAYS`}</b></div>; })()}
                 {kind === "collectionPromises" && r.status === "UNREACHABLE" && <small>DAYS UNREACHABLE: {r.unreachableDays || 1}</small>}
                 {kind === "tasks" && String(r.title || "").startsWith("Collect ") && r.status === "UNREACHABLE" && <small className="last-order-highlight">DAYS UNREACHABLE: {r.unreachableDays || 1}</small>}
                 {kind === "tasks" && String(r.title || "").startsWith("Collect ") && r.status === "PROMISED" && <small className="last-order-highlight">Promised: {r.collectionAmount || ""} by {r.collectionPromiseDate || ""}</small>}
