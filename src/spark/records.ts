@@ -124,6 +124,7 @@ export async function saveRecord(
         );
       if (
         key === "customerId" &&
+        p.role !== "Manager" &&
         c.data()?.assignedStaffId !== d.assignedStaffId
       )
         throw new HttpsError(

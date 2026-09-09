@@ -61,7 +61,7 @@ function managerTask(d){return branchRecord(d)
  && get(/databases/$(database)/documents/users/$(d.assignedStaffId)).data.branchId == profile().branchId
  && (get(/databases/$(database)/documents/users/$(d.assignedStaffId)).data.role == 'Staff' || d.assignedStaffId == request.auth.uid)
  && d.assignedStaffName == get(/databases/$(database)/documents/users/$(d.assignedStaffId)).data.name
- && (d.get('customerId','') == '' || (get(/databases/$(database)/documents/staffCustomers/$(d.customerId)).data.branchId == profile().branchId && customerScope(d)))
+ && (d.get('customerId','') == '' || (get(/databases/$(database)/documents/staffCustomers/$(d.customerId)).data.active == true && get(/databases/$(database)/documents/staffCustomers/$(d.customerId)).data.branchId == profile().branchId))
  && d.get('leadId','') == '' && d.sourceType == 'ADMIN' && d.sourceId == id;}
 function managerLegacyTask(d){return manager() && d.get('branchId','') == '' && d.sourceType == 'ADMIN' && get(/databases/$(database)/documents/users/$(d.assignedStaffId)).data.branchId == profile().branchId;}
 function valid(d){return (d.get('branchId','') == '' || d.branchId == profile().get('branchId','')) && base(d) && valid_tasks(d) && taskSource(id,d);}
