@@ -79,7 +79,10 @@ export function createCisappReader(
       // Firestore validates the ID token and existing CISapp rules authorize this GET.
       const response = await read(`/users/${claims.sub}`);
       const profile = decodeFields(response.fields || {});
-      if (profile.role !== "Admin" || profile.active !== true)
+      if (
+        String(profile.role || "").toLowerCase() !== "admin" ||
+        profile.active !== true
+      )
         throw new Error("An active CISapp Admin account is required");
     },
     // Existing CISapp index: customerId ASC, date DESC. No source changes.
