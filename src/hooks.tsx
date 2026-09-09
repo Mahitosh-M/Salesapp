@@ -156,7 +156,8 @@ export function useRows(
     },
   };
 }
-export function useDocument(name: string, id: string) {
+export function useDocument(name: string, id: string, enabled = true) {
+  const { profile } = useAuth();
   const [row, setRow] = useState<Row | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -172,6 +173,12 @@ export function useDocument(name: string, id: string) {
     setLoading(true);
     setRow(null);
     setError("");
+    if (!profile || !enabled) {
+      setLoading(false);
+      return () => {
+        active = false;
+      };
+    }
     readOne(name, id)
       .then((r) => active && setRow(r))
       .catch((e) => active && setError(e.message))
@@ -179,7 +186,7 @@ export function useDocument(name: string, id: string) {
     return () => {
       active = false;
     };
-  }, [name, id, revision]);
+  }, [name, id, revision, profile?.uid, enabled]);
   return { row, loading, error, reload: () => setRevision((x) => x + 1) };
 }
 export function useLiveDocument(name: string, id: string) {

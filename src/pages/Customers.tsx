@@ -389,9 +389,11 @@ export function CustomerDetail() {
   );
 }
 function AdminInsight({ id }: { id: string }) {
-  const score = useDocument("adminCis_customerIntelligenceSummaries", id);
-  const credit = useDocument("adminCis_customerCreditProfiles", id);
-  const pc = useDocument("adminCis_pcBalances", id);
+  const { profile } = useAuth();
+  const adminData = profile?.role === "Admin";
+  const score = useDocument("adminCis_customerIntelligenceSummaries", id, adminData);
+  const credit = useDocument("adminCis_customerCreditProfiles", id, adminData);
+  const pc = useDocument("adminCis_pcBalances", id, adminData);
   const s = score.row?.payload;
   const c = credit.row?.payload;
   return (
