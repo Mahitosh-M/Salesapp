@@ -4,8 +4,22 @@ import { saveRecord, markOverduePage } from "./records";
 import { assignUnassignedCustomersForStaff, refreshCustomer, syncStep } from "./sync";
 import { rebuildTargets } from "./targets";
 import { refreshCollectionScheduleForCustomer } from "./collections";
+import { generateAutomaticFollowUps } from "./autoFollowUps";
+import { generateBufferCollections } from "./autoCollections";
 import { branchIds, today, type Data } from "../../shared/schema";
 const onCall = (fn: (request: { data: Data }) => Promise<any>) => fn;
+async function createAutomaticWorkForStaff(p: Awaited<ReturnType<typeof actor>>, staffId: string) {
+  let cursor: string | undefined;
+  let followUps = 0;
+  do {
+    const result = await generateAutomaticFollowUps(p, cursor, staffId);
+    followUps += result.changed;
+    cursor = result.cursor;
+    if (result.done) break;
+  } while (true);
+  await generateBufferCollections(p, () => false, staffId);
+  return followUps;
+}
 export const saveSalesRecord = onCall(async (request) => {
   const p = await actor(request);
   return saveRecord(p, request.data.kind, request.data.id, request.data.record);
@@ -32,6 +46,10 @@ export const syncCriticalCisapp = onCall(async (request) => {
       const stored = await import("./orderAttribution").then((m) => m.storeInvoiceOrder(id, payload, new Date().toISOString()));
       if (stored?.lastOrderChanged) await refreshCustomer(customerId);
       const month = typeof payload.date === "string" ? payload.date.slice(0, 7) : "";
+      if (/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) await rebuildTargets(month);
+    } else {
+      const order = await salesDb.doc(`staffSalesOrders/${id}`).get();
+      const month = String(order.data()?.month || "");
       if (/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) await rebuildTargets(month);
     }
     await refreshCollectionScheduleForCustomer(customerId);
@@ -92,7 +110,10 @@ export const saveUser = onCall(async (request) => {
   await salesDb.doc(`cisStaffDirectoryMap/${directoryToken}`).set({ staffId: uid, branchId: d.branchId, active: d.active !== false && d.role === "Staff" });
   await salesDb.doc(`cisStaffDirectory/${d.branchId}/staff/${directoryToken}`).set({ name: d.name.trim() });
   const assignedCustomers = d.role === "Staff" ? await assignUnassignedCustomersForStaff(uid, d.branchId) : 0;
-  return { uid, assignedCustomers };
+  const automaticFollowUps = d.role === "Staff" && d.active !== false
+    ? await createAutomaticWorkForStaff(p, uid)
+    : 0;
+  return { uid, assignedCustomers, automaticFollowUps };
 });
 export const assignCustomer = onCall(async (request) => {
   await actor(request, true);
@@ -137,6 +158,7 @@ export const assignCustomer = onCall(async (request) => {
   if ((await oldTarget.get()).exists)
     await oldTarget.update({ staffAttributionValid: false });
   await refreshCustomer(customerId);
+  await createAutomaticWorkForStaff(await actor(request, true), assignedStaffId);
   await rebuildTargets(month);
   return { ok: true };
 });

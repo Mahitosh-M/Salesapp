@@ -5,9 +5,9 @@ import { automaticFollowUpId, followUpDueDate, needsAutomaticFollowUp } from "..
 function followUpInput(d: Data) {
   return Object.fromEntries(["title", "status", "priority", "assignedStaffId", ...modules.followUps.fields.map((f) => f.key)].map((key) => [key, d[key] || ""]));
 }
-export async function generateAutomaticFollowUps(p: Profile, cursor?: string) {
+export async function generateAutomaticFollowUps(p: Profile, cursor?: string, staffId?: string) {
   let query = salesDb.collection("staffCustomers").where("active", "==", true).orderBy(FieldPath.documentId()).limit(25);
-  if (p.role === "Staff") query = query.where("assignedStaffId", "==", p.uid);
+  if (staffId || p.role === "Staff") query = query.where("assignedStaffId", "==", staffId || p.uid);
   if (cursor) query = query.startAfter(cursor);
   const customers = await query.get();
   let changed = 0;
@@ -18,7 +18,7 @@ export async function generateAutomaticFollowUps(p: Profile, cursor?: string) {
     if (!owner?.active) continue;
     const expected = await automaticFollowUpId(row.id, customer.lastOrderDate);
     let pending = salesDb.collection("followUps").where("customerId", "==", row.id).where("status", "==", "PENDING").orderBy(FieldPath.documentId()).limit(25);
-    if (p.role === "Staff") pending = pending.where("assignedStaffId", "==", p.uid);
+    if (staffId || p.role === "Staff") pending = pending.where("assignedStaffId", "==", staffId || p.uid);
     let last: string | undefined;
     do {
       const page = await (last ? pending.startAfter(last) : pending).get();

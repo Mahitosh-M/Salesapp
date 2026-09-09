@@ -12,7 +12,7 @@ import {
   Layers,
   ArrowRight,
 } from "lucide-react";
-import { useAuth, useRows, useDocument } from "../hooks";
+import { useAuth, useRows, useDocument, useLiveDocument } from "../hooks";
 import {
   Header,
   Panel,
@@ -33,7 +33,7 @@ export default function Dashboard() {
 export function Today() {
   const { profile } = useAuth();
   const month = today().slice(0, 7);
-  const targets = useRows("staffTargetProgress", [["month", "==", month]]);
+  const target = useLiveDocument("staffTargetProgress", `${profile?.uid || "pending"}_${month}`);
   const queue = useRows(
     "tasks",
     [
@@ -49,7 +49,7 @@ export function Today() {
   const openWork = useRows("staffWorkSummaries");
   const dayCounts = dayWork.rows[0]?.counts || {};
   const openCounts = openWork.rows[0]?.counts || {};
-  const t = targets.rows[0];
+  const t = target.row;
   const counts = performance.rows[0]?.counts || {};
   const first = profile!.name.split(" ")[0];
   const hour = new Date().getHours();
@@ -84,7 +84,7 @@ export function Today() {
       />
       <ErrorBox
         message={
-          targets.error ||
+          target.error ||
           queue.error ||
           performance.error ||
           dayWork.error ||

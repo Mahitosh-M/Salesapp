@@ -44,13 +44,18 @@ export async function storeInvoiceOrder(
   const customerRef = salesDb.doc(`staffCustomers/${input.customerId}`);
   const directoryToken = typeof input.salesStaffDirectoryToken === "string" ? input.salesStaffDirectoryToken : "";
   const directoryMap = directoryToken ? (await salesDb.doc(`cisStaffDirectoryMap/${directoryToken}`).get()).data() : undefined;
+  const directoryStaff = directoryMap?.active && typeof directoryMap.staffId === "string"
+    ? (await salesDb.doc(`users/${directoryMap.staffId}`).get()).data()
+    : undefined;
   const manualEmail = typeof input.salesStaffEmail === "string" ? input.salesStaffEmail.trim().toLowerCase() : "";
   const manualSnapshot = manualEmail
     ? await salesDb.collection("users").where("email", "==", manualEmail).limit(1).get()
     : undefined;
   const manualDoc = manualSnapshot?.docs[0];
   const manualStaff = manualDoc?.data();
-  const manualStaffId = directoryMap?.active ? directoryMap.staffId : (manualDoc?.id || "");
+  const manualStaffId = directoryStaff?.active && directoryStaff.role === "Staff"
+    ? String(directoryMap?.staffId || "")
+    : (manualDoc?.id || "");
   return salesDb.runTransaction(async (tx) => {
     const signal = await tx.get(signalRef);
     const lastOrder = await tx.get(lastOrderRef);
@@ -60,7 +65,8 @@ export async function storeInvoiceOrder(
     const candidate = signal.data() || {};
     const keepCredit = previous.attributionStatus === "STAFF_CREDITED";
     const matches = !keepCredit && signalMatchesInvoice(candidate, input);
-    const manualCredit = !keepCredit && manualStaffId && manualStaff?.role === "Staff" && manualStaff?.active !== false;
+    const selectedStaff = directoryStaff || manualStaff;
+    const manualCredit = !keepCredit && Boolean(manualStaffId) && selectedStaff?.role === "Staff" && selectedStaff?.active !== false;
     const assignedStaffId = keepCredit
       ? previous.assignedStaffId
       : manualCredit
@@ -71,7 +77,7 @@ export async function storeInvoiceOrder(
     const assignedStaffName = keepCredit
       ? previous.assignedStaffName
       : manualCredit
-        ? (manualStaff?.name || input.salesStaffName || "")
+        ? (selectedStaff?.name || input.salesStaffName || "")
         : matches
         ? candidate.assignedStaffName
         : "";

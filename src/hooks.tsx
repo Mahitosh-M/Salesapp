@@ -88,6 +88,7 @@ export function useRows(
   name: string,
   filters: Filter[] = [],
   sort?: [string, "asc" | "desc"],
+  enabled = true,
 ) {
   const { profile } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
@@ -108,7 +109,10 @@ export function useRows(
     setRows([]);
     setLoading(true);
     setError("");
-    if (!profile) return;
+    if (!profile || !enabled) {
+      setLoading(false);
+      return;
+    }
     page(name, profile, filters, undefined, sort)
       .then((r) => {
         if (active) {
@@ -122,7 +126,7 @@ export function useRows(
     return () => {
       active = false;
     };
-  }, [key]);
+  }, [key, enabled]);
   const loadMore = async () => {
     if (!profile || loading || !hasMore) return;
     setLoading(true);

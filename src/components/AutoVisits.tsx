@@ -7,7 +7,7 @@ export function AutoVisits() {
   const { profile } = useAuth();
   const [error, setError] = useState("");
   useEffect(() => {
-    if (!profile) return;
+    if (!profile || profile.role !== "Admin") return;
     let stopped = false,
       busy = false,
       completedDay = "",

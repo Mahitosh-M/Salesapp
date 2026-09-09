@@ -2,9 +2,9 @@ import { salesDb, FieldPath } from "./db";
 import { saveRecord } from "./records";
 import { collectionDue } from "../../shared/collections";
 import { type Profile, today } from "../../shared/schema";
-export async function generateBufferCollections(profile:Profile,stopped=()=>false){
+export async function generateBufferCollections(profile:Profile,stopped=()=>false,staffId=""){
  let q=salesDb.collection("collectionSnapshots").where("active","==",true).orderBy(FieldPath.documentId()).limit(25);
- if(profile.role === "Staff")q=q.where("assignedStaffId","==",profile.uid);
+ if(staffId || profile.role === "Staff")q=q.where("assignedStaffId","==",staffId || profile.uid);
  if(profile.role === "Manager")q=q.where("branchId","==",profile.branchId || "NO_BRANCH");
  let cursor:string|undefined;
  do{const page=await (cursor?q.startAfter(cursor):q).get();

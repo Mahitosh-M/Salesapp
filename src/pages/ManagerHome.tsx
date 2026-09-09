@@ -7,12 +7,12 @@ import { collectionDue } from "../../shared/collections";
 import { today } from "../../shared/schema";
 export default function ManagerHome() {
  const {profile,logout}=useAuth();
- const tasks=useRows("tasks");
- const team=useRows("users");
- const customers=useRows("collectionSnapshots");
- const staffCustomers=useRows("staffCustomers");
- const [edit,setEdit]=useState<Row | null | undefined>();
  const [tab,setTab]=useState("tasks");
+ const tasks=useRows("tasks");
+ const team=useRows("users",[],undefined,tab === "team" || tab === "collections");
+ const customers=useRows("collectionSnapshots",[],undefined,tab === "collections");
+ const staffCustomers=useRows("staffCustomers",[],undefined,tab === "followups");
+ const [edit,setEdit]=useState<Row | null | undefined>();
  const followups=tasks.rows.filter((task)=>task.sourceType === "followUps");
  return <main><Header eyebrow={`${profile?.branchId} ? BRANCH MANAGER`} title="Branch workspace" description="Assign work, delegate your tasks, and check collections for your branch." actions={<button className="secondary" onClick={logout}>Sign out</button>} />
  <div className="toolbar"><button onClick={()=>setTab("tasks")}>Branch tasks</button><button onClick={()=>setTab("followups")}>Follow-ups</button><button onClick={()=>setTab("collections")}>Collections</button><button onClick={()=>setTab("team")}>Branch Staff</button><button onClick={()=>setEdit(null)}>Assign task</button></div>
