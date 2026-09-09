@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle2, RefreshCw, Unplug } from "lucide-react";
-import { onSnapshot, collection, query, where } from "firebase/firestore";
+import { onSnapshot, collection, doc, getDoc, query, where } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 import { cisAuth, cisDb } from "../services/cisappSession";
 import { command, clearCache, readOne } from "../services/sales";
 import { today, type Data } from "../../shared/schema";
@@ -48,18 +49,24 @@ export function AutoCisappSync() {
     let stopped = false;
     let invoiceStop: (() => void) | undefined;
     let paymentStop: (() => void) | undefined;
+    const stopListeners = () => { invoiceStop?.(); paymentStop?.(); invoiceStop = undefined; paymentStop = undefined; };
     const startCriticalListeners = async () => {
-      const session = await import("../services/cisappSession");
-      if (!(await session.isConnected()) || !cisAuth.currentUser) return;
+      stopListeners();
+      const sourceUser = cisAuth.currentUser;
+      if (!sourceUser) return;
+      const sourceProfile = await getDoc(doc(cisDb, "users", sourceUser.uid));
+      const profile = sourceProfile.data();
+      if (stopped || !profile?.active || String(profile.role || "").toLowerCase() !== "admin") return;
       const since = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
       const watch = (kind: "invoices" | "payments") => onSnapshot(
         query(collection(cisDb, kind), where("updatedAt", ">=", since)),
         (snap) => { for (const change of snap.docChanges()) if (change.type !== "removed") void command("syncCriticalCisapp", { kind, id: change.doc.id, payload: change.doc.data() }); },
+        () => undefined,
       );
       if (!stopped) { invoiceStop = watch("invoices"); paymentStop = watch("payments"); }
     };
-    void startCriticalListeners();
-    return () => { stopped = true; invoiceStop?.(); paymentStop?.(); };
+    const unsubscribe = onAuthStateChanged(cisAuth, () => { void startCriticalListeners().catch(() => undefined); });
+    return () => { stopped = true; unsubscribe(); stopListeners(); };
   }, []);
 
   if (status === "checking") return null;
