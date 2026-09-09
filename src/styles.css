@@ -2281,3 +2281,5 @@ input:disabled,select:disabled,textarea:disabled { background:#eef2f6; color:#5e
 .followup-card.status-paid, .followup-card.status-completed { border-left-color: #16a34a; background: #f0fdf4; }
 
 .last-order-highlight { font-size: 1.08rem; font-weight: 900; color: #073b66; background: #bae6fd; border: 1px solid #38bdf8; padding: 6px 10px; border-radius: 7px; display: inline-block; letter-spacing: .01em; }
+.manager-mobile-nav { display:none; }
+@media (max-width:700px) { .manager-workspace { padding-bottom:78px; } .manager-workspace > .toolbar { display:none; } .manager-mobile-nav { position:fixed; z-index:30; left:0; right:0; bottom:0; display:grid; grid-template-columns:repeat(4,1fr); gap:5px; padding:8px; background:#fff; border-top:1px solid #dbeafe; } .manager-mobile-nav button { padding:10px 2px; font-size:.72rem; } .manager-workspace .last-order-highlight { font-size:1.2rem; padding:8px 11px; } }
