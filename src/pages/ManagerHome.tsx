@@ -169,6 +169,17 @@ export default function ManagerHome() {
                             <b>AMOUNT: {money(facts.amount)}</b>
                             <b>DUE: {shortDate(facts.due)}</b>
                             <b>DAYS: {dayCount(facts.due)} DAYS</b>
+                            {task.status === "UNREACHABLE" && (
+                              <b>DAYS UNREACHABLE: {task.unreachableDays || 1}</b>
+                            )}
+                            {task.status === "PROMISED" && (
+                              <b>
+                                PROMISED: {money(task.collectionAmount)} BY{" "}
+                                {shortDate(
+                                  String(task.collectionPromiseDate || ""),
+                                )}
+                              </b>
+                            )}
                           </div>
                         )}
                         {task.sourceType === "followUps" && (
@@ -181,23 +192,16 @@ export default function ManagerHome() {
                             </b>
                           </div>
                         )}
-                        {isCollection && task.status === "UNREACHABLE" && (
-                          <p className="last-order-highlight">
-                            DAYS UNREACHABLE: {task.unreachableDays || 1}
-                          </p>
+                        {!isCollection && task.sourceType !== "followUps" && (
+                          <>
+                            <p>
+                              {task.assignedStaffName} - Due {task.dueDate}
+                            </p>
+                            {task.staffNote || task.notes ? (
+                              <p>{task.staffNote || task.notes}</p>
+                            ) : null}
+                          </>
                         )}
-                        {isCollection && task.status === "PROMISED" && (
-                          <p className="last-order-highlight">
-                            PROMISED: {money(task.collectionAmount)} BY{" "}
-                            {shortDate(String(task.collectionPromiseDate || ""))}
-                          </p>
-                        )}
-                        <p>
-                          {task.assignedStaffName} - Due {task.dueDate}
-                        </p>
-                        {task.staffNote || task.notes ? (
-                          <p>{task.staffNote || task.notes}</p>
-                        ) : null}
                       </div>
                       {task.sourceType === "ADMIN" && (
                         <button onClick={() => setEdit(task)}>
@@ -253,6 +257,7 @@ export default function ManagerHome() {
                 key={row.id}
               >
                 <h3>{row.title}</h3>
+                <Badge value={row.status} />
                 <div className="task-fact-box followup-fact">
                   <b>
                     LAST ORDER:{" "}
@@ -266,10 +271,6 @@ export default function ManagerHome() {
                     })()}
                   </b>
                 </div>
-                <Badge value={row.status} />
-                {row.staffNote || row.notes ? (
-                  <p>{row.staffNote || row.notes}</p>
-                ) : null}
               </article>
             ))}
           </div>
