@@ -39,6 +39,11 @@ service cloud.firestore {
    allow list: if bounded() && (admin() || branchRecord(resource.data) || (own(resource.data) && resource.data.active == true));
    allow create, update: if admin() && request.resource.data.keys().hasOnly(['invoices','scheduleUpdatedAt','branchId','customerId','name','assignedStaffId','active','outstandingAmount','overdueAmount','oldestDueDate','dueDate','amountRequiringFollowUp','financialSourceUpdatedAt','overdueSourceUpdatedAt','sourceUpdatedAt','syncedAt']);
   }
+  match /syncState/{id} {
+   allow get: if admin() && id == 'cisapp';
+   allow list: if false;
+   allow create, update, delete: if admin() && id == 'cisapp';
+  }
   match /publicState/{id}{allow get: if active() && id == 'sync';allow write: if admin() && id == 'sync';}
   match /settings/{id}{allow get: if active() && id == 'general';allow write: if admin() && id == 'general';}
  function valid_leads(d){return d.keys().hasOnly(["title","status","priority","assignedStaffId","assignedStaffName","createdAt","createdBy","updatedAt","createdOn","submittedAt","contactPerson","phone","whatsapp","area","branchId","source","businessType","interest","nextFollowUp","linkedCustomerId","notes"]) && d.status in ["NEW","CONTACTED","INTERESTED","FOLLOW_UP","TRIAL_OR_NEGOTIATION","READY_FOR_CISAPP_CREATION","CONVERTED","LOST"] && (d.get('contactPerson','') == '' || (text(d.get('contactPerson','')))) && (d.get('phone','') == '' || (text(d.get('phone','')))) && (d.get('whatsapp','') == '' || (text(d.get('whatsapp','')))) && (d.get('area','') == '' || (text(d.get('area','')))) && (d.get('branchId','') == '' || d.get('branchId','') in ['SINDHANUR','MASKI']) && (d.get('source','') == '' || (text(d.get('source','')))) && (d.get('businessType','') == '' || (text(d.get('businessType','')))) && (d.get('interest','') == '' || (text(d.get('interest','')))) && (d.get('nextFollowUp','') == '' || (date(d.get('nextFollowUp','')))) && (d.get('linkedCustomerId','') == '' || (identifier(d.get('linkedCustomerId','')))) && (d.get('notes','') == '' || (text(d.get('notes','')))) && d.get('linkedCustomerId','') == '' && d.status != 'CONVERTED';}
