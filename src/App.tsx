@@ -184,13 +184,6 @@ function Layout() {
             <b>{profile!.name}</b>
             <span>{profile!.role} workspace</span>
           </div>
-          <button
-            className="icon-button"
-            aria-label="Sign out"
-            onClick={logout}
-          >
-            <LogOut size={17} />
-          </button>
         </div>
       </aside>
       <div className="main-shell">
@@ -223,6 +216,10 @@ function Layout() {
             <div className="avatar mini-avatar">
               {profile!.name.slice(0, 1)}
             </div>
+            <button className="topbar-signout" onClick={logout}>
+              <LogOut size={16} />
+              <span>Sign out</span>
+            </button>
           </div>
         </header>
         <main>

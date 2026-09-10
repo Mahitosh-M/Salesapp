@@ -381,6 +381,22 @@ input[type="checkbox"] {
   align-items: center;
   gap: 22px;
 }
+.topbar-signout {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:36px;
+  padding:8px 12px;
+  border:0;
+  border-radius:9px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  color:#fff;
+  font-size:.76rem;
+  font-weight:800;
+  white-space:nowrap;
+  box-shadow:0 5px 14px #4f46e533;
+}
 .workspace-status {
   display: flex;
   align-items: center;
@@ -1716,6 +1732,11 @@ td small {
   }
   .topbar-right {
     gap: 10px;
+  }
+  .topbar-signout {
+    min-height:34px;
+    padding:7px 9px;
+    font-size:.7rem;
   }
   .bottom-nav {
     display: flex;

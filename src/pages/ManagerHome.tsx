@@ -35,7 +35,7 @@ const shortDate = (date: string) =>
         .toUpperCase()
     : date || "NOT SET";
 export default function ManagerHome() {
-  const { profile, logout } = useAuth();
+  const { profile } = useAuth();
   const [tab, setTab] = useState("tasks");
   const tasks = useRows("tasks");
   const team = useRows(
@@ -93,9 +93,6 @@ export default function ManagerHome() {
               : "Your branch has no overdue tasks."}
           </p>
         </div>
-        <button className="light" onClick={logout}>
-          Sign out
-        </button>
       </div>
       <ErrorBox
         message={
