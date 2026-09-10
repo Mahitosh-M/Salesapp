@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 
-export const emulator = import.meta.env.VITE_USE_EMULATORS === "true";
+export const emulator = import.meta.env?.VITE_USE_EMULATORS === "true";
 const app = initializeApp({
   apiKey: "AIzaSyDfVigFg3Kn25c2T2mY8Gqpv9HaZxRzQvc",
   authDomain: "salesapp-aaa7b.firebaseapp.com",

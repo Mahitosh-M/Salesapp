@@ -1,0 +1,33 @@
+name: Daily CISapp sync
+
+on:
+  schedule:
+    - cron: "0 7 * * *"
+      timezone: "Asia/Kolkata"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-cisapp-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run incremental CISapp sync
+        run: npm run sync:daily
+        env:
+          SALESAPP_SYNC_EMAIL: ${{ secrets.SALESAPP_SYNC_EMAIL }}
+          SALESAPP_SYNC_PASSWORD: ${{ secrets.SALESAPP_SYNC_PASSWORD }}
+          CISAPP_SYNC_EMAIL: ${{ secrets.CISAPP_SYNC_EMAIL }}
+          CISAPP_SYNC_PASSWORD: ${{ secrets.CISAPP_SYNC_PASSWORD }}
