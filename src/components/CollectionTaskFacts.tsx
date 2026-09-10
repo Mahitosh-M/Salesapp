@@ -60,22 +60,39 @@ export function CollectionTaskFacts({
     : stored.dueDate;
 
   return (
-    <div className="task-fact-box collection-facts">
-      <b>
-        AMOUNT:{" "}
-        {snapshot.loading && !stored.amount ? "FETCHING..." : money(amount)}
-      </b>
-      <b>DUE: {shortDate(dueDate)}</b>
-      <b>DAYS: {dayCount(dueDate)} DAYS</b>
-      {includeStatus && task.status === "UNREACHABLE" && (
-        <b>DAYS UNREACHABLE: {task.unreachableDays || 1}</b>
-      )}
-      {includeStatus && task.status === "PROMISED" && (
-        <b>
-          PROMISED: {money(task.collectionAmount)} BY{" "}
-          {shortDate(String(task.collectionPromiseDate || ""))}
-        </b>
-      )}
+    <div className="task-fact-box collection-facts collection-task-facts">
+      <div className="collection-fact collection-fact-amount">
+        <span>AMOUNT</span>
+        <strong>
+          {snapshot.loading && !stored.amount ? "FETCHING..." : money(amount)}
+        </strong>
+        {includeStatus && task.status === "PROMISED" && (
+          <small className="collection-fact-detail">
+            <span>PROMISED</span>
+            <em>{money(task.collectionAmount)}</em>
+          </small>
+        )}
+      </div>
+      <div className="collection-fact collection-fact-date">
+        <span>DUE DATE</span>
+        <strong>{shortDate(dueDate)}</strong>
+        {includeStatus && task.status === "PROMISED" && (
+          <small className="collection-fact-detail">
+            <span>PROMISE DATE</span>
+            <em>{shortDate(String(task.collectionPromiseDate || ""))}</em>
+          </small>
+        )}
+      </div>
+      <div className="collection-fact collection-fact-days">
+        <span>DAYS DUE</span>
+        <strong>{dayCount(dueDate)} DAYS</strong>
+        {includeStatus && task.status === "UNREACHABLE" && (
+          <small className="collection-fact-detail">
+            <span>UNREACHABLE</span>
+            <em>{task.unreachableDays || 1} DAYS</em>
+          </small>
+        )}
+      </div>
     </div>
   );
 }

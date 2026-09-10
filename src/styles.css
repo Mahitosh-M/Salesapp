@@ -2284,5 +2284,15 @@ input:disabled,select:disabled,textarea:disabled { background:#eef2f6; color:#5e
 .manager-mobile-nav { display:none; }
 .task-fact-box { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; padding:10px 12px; border-radius:9px; font-size:1.08rem; border:1px solid #38bdf8; background:#e0f2fe; color:#073b66; }
 .collection-facts { background:#fff7ed; border-color:#fb923c; color:#9a3412; }
+.collection-task-facts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); padding:0; border:0; background:transparent; gap:8px; }
+.collection-fact { display:flex; min-width:0; flex-direction:column; gap:3px; padding:10px 8px; border:1px solid; border-radius:9px; text-align:center; }
+.collection-fact span { color:#111827; font-size:.72rem; font-weight:800; letter-spacing:.04em; }
+.collection-fact strong { color:#dc2626; font-size:1.08rem; font-weight:900; overflow-wrap:anywhere; }
+.collection-fact-detail { display:flex; flex-direction:column; gap:1px; margin-top:4px; padding-top:5px; border-top:1px solid #0002; }
+.collection-fact-detail em { color:#dc2626; font-size:.82rem; font-style:normal; font-weight:900; }
+.collection-fact-amount { background:#ecfdf5; border-color:#6ee7b7; }
+.collection-fact-date { background:#eff6ff; border-color:#93c5fd; }
+.collection-fact-days { background:#fffbeb; border-color:#fcd34d; }
+
 .followup-fact { background:#ede9fe; border-color:#8b5cf6; color:#5b21b6; font-size:1.16rem; }
 @media (max-width:700px) { .manager-workspace { padding-bottom:78px; } .manager-workspace > .toolbar { display:none; } .manager-mobile-nav { position:fixed; z-index:30; left:0; right:0; bottom:0; display:grid; grid-template-columns:repeat(4,1fr); gap:5px; padding:8px; background:#fff; border-top:1px solid #dbeafe; } .manager-mobile-nav button { padding:10px 2px; font-size:.72rem; } .manager-workspace .last-order-highlight { font-size:1.2rem; padding:8px 11px; } }
