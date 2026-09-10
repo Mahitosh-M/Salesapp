@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CheckCircle2, ListTodo, Users, Wallet } from "lucide-react";
 import { useAuth, useRows } from "../hooks";
 import { RecordEditor } from "../components/RecordEditor";
+import { CollectionTaskFacts } from "../components/CollectionTaskFacts";
 import {
   Header,
   Panel,
@@ -33,16 +34,6 @@ const shortDate = (date: string) =>
         .toLocaleDateString("en-IN", { day: "2-digit", month: "short" })
         .toUpperCase()
     : date || "NOT SET";
-const collectionTaskFacts = (task: Row) => ({
-  amount: Number(
-    String(task.notes || "").match(/Combined unpaid amount ([0-9.]+)/)?.[1] ||
-      0,
-  ),
-  due:
-    String(task.notes || "").match(/Due dates: ([0-9-]+)/)?.[1] ||
-    String(task.dueDate || ""),
-});
-
 export default function ManagerHome() {
   const { profile, logout } = useAuth();
   const [tab, setTab] = useState("tasks");
@@ -149,7 +140,6 @@ export default function ManagerHome() {
                   const isCollection = String(task.title || "").startsWith(
                     "Collect ",
                   );
-                  const facts = collectionTaskFacts(task);
                   const customer = staffCustomers.rows.find(
                     (row) => row.id === task.customerId,
                   );
@@ -165,22 +155,7 @@ export default function ManagerHome() {
                         <Badge value={task.status} />
                         <h3>{task.title}</h3>
                         {isCollection && (
-                          <div className="task-fact-box collection-facts">
-                            <b>AMOUNT: {money(facts.amount)}</b>
-                            <b>DUE: {shortDate(facts.due)}</b>
-                            <b>DAYS: {dayCount(facts.due)} DAYS</b>
-                            {task.status === "UNREACHABLE" && (
-                              <b>DAYS UNREACHABLE: {task.unreachableDays || 1}</b>
-                            )}
-                            {task.status === "PROMISED" && (
-                              <b>
-                                PROMISED: {money(task.collectionAmount)} BY{" "}
-                                {shortDate(
-                                  String(task.collectionPromiseDate || ""),
-                                )}
-                              </b>
-                            )}
-                          </div>
+                          <CollectionTaskFacts task={task} includeStatus />
                         )}
                         {task.sourceType === "followUps" && (
                           <div className="task-fact-box followup-fact">

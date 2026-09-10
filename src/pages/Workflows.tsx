@@ -5,6 +5,7 @@ import { Plus, Search, ArrowUpRight, RefreshCw } from "lucide-react";
 import { modules, label, today } from "../../shared/schema";
 import { useAuth, useRows } from "../hooks";
 import { RecordEditor } from "../components/RecordEditor";
+import { CollectionTaskFacts } from "../components/CollectionTaskFacts";
 import {
   Header,
   Badge,
@@ -153,7 +154,7 @@ function Workflow({ kind }: { kind: string }) {
                   </small>
                 </div>
                 <h3>{r.title}</h3>
-                {kind === "tasks" && String(r.title || "").startsWith("Collect ") && (() => { const amount=Number(String(r.notes||"").match(/Combined unpaid amount ([0-9.]+)/)?.[1] || 0); const due=String(r.notes||"").match(/Due dates: ([0-9-]+)/)?.[1] || String(r.dueDate||""); return <div className="task-fact-box collection-facts"><b>AMOUNT: {money(amount)}</b><b>DUE: {shortDate(due)}</b><b>DAYS: {dayCount(due)} DAYS</b></div>; })()}
+                {kind === "tasks" && String(r.title || "").startsWith("Collect ") && <CollectionTaskFacts task={r} />}
                 {kind === "tasks" && r.sourceType === "followUps" && (() => { const c=customers.rows.find(x=>x.id===r.customerId); const days=c?.lastOrderDate ? dayCount(String(c.lastOrderDate)) : null; return <div className="task-fact-box followup-fact"><b>LAST ORDER: {days === null ? "UNKNOWN" : `${days} DAYS`}</b></div>; })()}
                 {kind === "collectionPromises" && r.status === "UNREACHABLE" && <small>DAYS UNREACHABLE: {r.unreachableDays || 1}</small>}
                 {kind === "tasks" && String(r.title || "").startsWith("Collect ") && r.status === "UNREACHABLE" && <small className="last-order-highlight">DAYS UNREACHABLE: {r.unreachableDays || 1}</small>}
