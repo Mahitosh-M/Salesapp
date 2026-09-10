@@ -170,6 +170,52 @@ suite("Spark rules enforce browser security", () => {
     });
     await assertSucceeds(batch.commit());
   });
+  it("allows assigned Staff to update delegated task progress without owning the customer", async () => {
+    await env.withSecurityRulesDisabled(async (c) => {
+      await setDoc(doc(c.firestore(), "tasks", "delegated-task"), {
+        title: "Collect customer due",
+        status: "PENDING",
+        priority: "HIGH",
+        assignedStaffId: "arun",
+        assignedStaffName: "Arun",
+        customerId: "theirs",
+        dueDate: "2026-09-10",
+        notes: "",
+        leadId: "",
+        sourceType: "ADMIN",
+        sourceId: "delegated-task",
+        collectionAmount: "",
+        collectionPromiseDate: "",
+        unreachableDays: "",
+        unreachableSince: "",
+        createdBy: "admin",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        createdOn: serverTimestamp(),
+        submittedAt: serverTimestamp(),
+      });
+    });
+    const db = env.authenticatedContext("arun").firestore();
+    await assertSucceeds(
+      updateDoc(doc(db, "tasks", "delegated-task"), {
+        status: "UNREACHABLE",
+        dueDate: "2026-09-11",
+        unreachableDays: 1,
+        unreachableSince: "2026-09-10",
+        notes: "Called once",
+        staffNote: "Called once",
+        updatedAt: new Date().toISOString(),
+        submittedAt: serverTimestamp(),
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(db, "tasks", "delegated-task"), {
+        title: "Changed by Staff",
+        updatedAt: new Date().toISOString(),
+        submittedAt: serverTimestamp(),
+      }),
+    );
+  });
   it("denies fabricated task origins", async () => {
     const d = base();
     const { type, outcome, nextFollowUp, ...rest } = d;

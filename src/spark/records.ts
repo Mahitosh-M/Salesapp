@@ -68,6 +68,8 @@ export async function saveRecord(
         "outcome",
         "nextFollowUp",
         "notes",
+        "collectionAmount",
+        "collectionPromiseDate",
       ]);
       const changedAssignment = Object.keys(d).some(
         (key) => !progressFields.has(key) && (d[key] ?? "") !== (before[key] ?? ""),
@@ -103,8 +105,17 @@ export async function saveRecord(
     );
     if (!owner.data()?.active)
       throw new HttpsError("invalid-argument", "Select an active owner");
+    const delegatedTaskProgress =
+      Boolean(before) &&
+      p.role === "Staff" &&
+      kind === "tasks" &&
+      before!.createdBy !== p.uid;
     for (const key of ["customerId", "linkedCustomerId"]) {
       if (!d[key]) continue;
+      // The manager/admin already authorized this immutable customer when the
+      // task was delegated. Re-reading it can be denied when the customer has
+      // a different owner, which must not block the assigned Staff's progress.
+      if (delegatedTaskProgress && key === "customerId") continue;
       const c = await tx.get(
         salesDb.doc(`staffCustomers/${requireId(d[key])}`),
       );
