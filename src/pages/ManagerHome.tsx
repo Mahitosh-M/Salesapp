@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckCircle2, ListTodo, Users, Wallet } from "lucide-react";
+import { Users } from "lucide-react";
 import { useAuth, useRows } from "../hooks";
 import { RecordEditor } from "../components/RecordEditor";
 import { CollectionTaskFacts } from "../components/CollectionTaskFacts";
@@ -10,7 +10,6 @@ import {
   PageEnd,
   Badge,
   Empty,
-  Metric,
   money,
 } from "../components/ui";
 import { type Row } from "../services/sales";
@@ -68,9 +67,6 @@ export default function ManagerHome() {
       String(task.dueDate || "") < today() &&
       !["COMPLETED", "CANCELLED", "PAID"].includes(String(task.status)),
   ).length;
-  const collectionTasks = tasks.rows.filter((task) =>
-    String(task.title || "").startsWith("Collect "),
-  ).length;
   return (
     <main className="manager-workspace">
       <Header
@@ -99,29 +95,6 @@ export default function ManagerHome() {
           tasks.error || team.error || customers.error || staffCustomers.error
         }
       />
-      <div className="metrics-grid">
-        <Metric
-          label="Open tasks"
-          value={openTasks}
-          note="Assigned to branch Staff"
-        />
-        <Metric
-          label="Overdue tasks"
-          value={overdueTasks}
-          note="Need a next action"
-          accent
-        />
-        <Metric
-          label="Follow-ups"
-          value={followups.length}
-          note="Generated for branch customers"
-        />
-        <Metric
-          label="Collection work"
-          value={collectionTasks}
-          note="Tasks requiring payment follow-up"
-        />
-      </div>
       <div className="toolbar">
         <button onClick={() => setTab("tasks")}>Branch tasks</button>
         <button onClick={() => setTab("followups")}>Follow-ups</button>
@@ -129,7 +102,6 @@ export default function ManagerHome() {
         <button onClick={() => setTab("team")}>Branch Staff</button>
       </div>
       {tab === "tasks" && (
-        <div className="two-columns">
           <Panel title="Branch tasks">
             {tasks.rows.length ? (
               <div className="record-list">
@@ -192,33 +164,6 @@ export default function ManagerHome() {
             )}
             <PageEnd state={tasks} />
           </Panel>
-          <Panel title="Needs attention">
-            <div className="alert-row">
-              <span className="alert-dot red" />
-              <div>
-                <b>{overdueTasks} overdue tasks</b>
-                <p>Review ownership and set the next action.</p>
-              </div>
-              <ListTodo size={18} />
-            </div>
-            <div className="alert-row">
-              <span className="alert-dot amber" />
-              <div>
-                <b>{collectionTasks} collection tasks</b>
-                <p>Check payment promises and current due amounts.</p>
-              </div>
-              <Wallet size={18} />
-            </div>
-            <div className="alert-row">
-              <span className="alert-dot purple" />
-              <div>
-                <b>{followups.length} follow-ups</b>
-                <p>Keep customers with no recent order moving.</p>
-              </div>
-              <CheckCircle2 size={18} />
-            </div>
-          </Panel>
-        </div>
       )}
       {tab === "followups" && (
         <Panel title="Branch follow-ups">
