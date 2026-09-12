@@ -76,6 +76,7 @@ export function taskFromSource(kind: string, id: string, d: Data): Data {
     assignedStaffId: d.assignedStaffId,
     assignedStaffName: d.assignedStaffName || d.assignedStaffId,
     customerId: d.customerId || "",
+    ...(d.branchId ? { branchId: d.branchId } : {}),
     leadId: kind === "leads" ? id : d.leadId || "",
     priority: d.priority,
     dueDate: dates,

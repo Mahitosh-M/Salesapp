@@ -37,6 +37,12 @@ export default function ManagerHome() {
   const { profile } = useAuth();
   const [tab, setTab] = useState("tasks");
   const tasks = useRows("tasks");
+  const followUpRows = useRows(
+    "followUps",
+    [],
+    undefined,
+    tab === "followups",
+  );
   const team = useRows(
     "users",
     [],
@@ -56,9 +62,7 @@ export default function ManagerHome() {
     tab === "followups" || tab === "tasks",
   );
   const [edit, setEdit] = useState<Row | null | undefined>();
-  const followups = tasks.rows.filter(
-    (task) => task.sourceType === "followUps",
-  );
+  const followups = followUpRows.rows;
   const openTasks = tasks.rows.filter(
     (task) => !["COMPLETED", "CANCELLED", "PAID"].includes(String(task.status)),
   ).length;
@@ -92,7 +96,11 @@ export default function ManagerHome() {
       </div>
       <ErrorBox
         message={
-          tasks.error || team.error || customers.error || staffCustomers.error
+          tasks.error ||
+          followUpRows.error ||
+          team.error ||
+          customers.error ||
+          staffCustomers.error
         }
       />
       <div className="toolbar">
@@ -191,7 +199,7 @@ export default function ManagerHome() {
               </article>
             ))}
           </div>
-          <PageEnd state={tasks} />
+          <PageEnd state={followUpRows} />
         </Panel>
       )}
       {tab === "collections" && (

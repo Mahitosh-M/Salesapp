@@ -58,12 +58,19 @@ suite("Spark rules enforce browser security", () => {
         ["arun", "Staff", true],
         ["neha", "Staff", true],
         ["disabled", "Staff", false],
+        ["manager", "Manager", true],
       ] as const)
         await setDoc(doc(db, "users", id), {
           uid: id,
           name: id === "arun" ? "Arun" : id,
           role,
           active,
+          branchId:
+            id === "manager" || id === "arun"
+              ? "SINDHANUR"
+              : id === "neha"
+                ? "MASKI"
+                : "",
         });
       for (const [id, owner] of [
         ["mine", "arun"],
@@ -159,16 +166,44 @@ suite("Spark rules enforce browser security", () => {
       dueDate: "2026-09-10",
       outcome: "",
       nextFollowUp: "",
+      branchId: "SINDHANUR",
     });
     batch.set(doc(db, "tasks", "followUps_activity_with-follow"), {
       ...rest,
       title: "Follow up",
       status: "PENDING",
       dueDate: "2026-09-10",
+      branchId: "SINDHANUR",
       sourceType: "followUps",
       sourceId: "activity_with-follow",
     });
     await assertSucceeds(batch.commit());
+  });
+  it("allows Managers to read follow-ups only for their branch", async () => {
+    await env.withSecurityRulesDisabled(async (c) => {
+      const db = c.firestore();
+      await setDoc(doc(db, "followUps", "sindhanur-follow-up"), {
+        branchId: "SINDHANUR",
+        assignedStaffId: "arun",
+      });
+      await setDoc(doc(db, "followUps", "maski-follow-up"), {
+        branchId: "MASKI",
+        assignedStaffId: "neha",
+      });
+    });
+    const db = env.authenticatedContext("manager").firestore();
+    await assertSucceeds(getDoc(doc(db, "followUps", "sindhanur-follow-up")));
+    await assertFails(getDoc(doc(db, "followUps", "maski-follow-up")));
+    const rows = await getDocs(
+      query(
+        collection(db, "followUps"),
+        where("branchId", "==", "SINDHANUR"),
+        limit(25),
+      ),
+    );
+    const ids = rows.docs.map((row) => row.id);
+    expect(ids).toContain("sindhanur-follow-up");
+    expect(ids).not.toContain("maski-follow-up");
   });
   it("allows assigned Staff to update delegated task progress without owning the customer", async () => {
     await env.withSecurityRulesDisabled(async (c) => {
