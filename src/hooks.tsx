@@ -21,6 +21,7 @@ import {
   type Filter,
 } from "./services/sales";
 import type { Profile } from "../shared/schema";
+import { withLoginRateLimit } from "./utils/loginRateLimit";
 const AuthContext = createContext<{
   profile: Profile | null;
   loading: boolean;
@@ -71,7 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error,
         login: async (e, p) => {
           setError("");
-          await signInWithEmailAndPassword(salesAuth, e.trim(), p);
+          const normalizedEmail = e.trim().toLowerCase();
+          await withLoginRateLimit(normalizedEmail, () =>
+            signInWithEmailAndPassword(salesAuth, normalizedEmail, p),
+          );
         },
         logout: async () => {
           clearCache();
