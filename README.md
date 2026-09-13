@@ -108,3 +108,23 @@ Use the same production link on desktop or mobile. Desktop shows a sidebar and w
 CISapp customer records have a required Branch choice: SINDHANUR or MASKI. Salesapp Sync copies that branch. When an Admin creates or updates an active Staff profile with the same branch, Salesapp assigns currently unassigned customers in that branch to the Staff member. A later sync also assigns a newly imported, unassigned customer to the first active Staff UID in the matching branch. Existing manual customer assignments are preserved.
 
 Salesapp uses the synchronized latest normal business invoice date to create automatic follow-ups after 15 calendar days without an order. Customers with no normal business order also receive a follow-up after the source check. Automatic IDs are stable, so reopening the app or running sync again does not duplicate them. Manual follow-ups remain separate. When a newer order changes the date, an obsolete pending automatic follow-up and its linked task are cancelled; completed records remain as history.
+
+## Environment configuration
+
+Copy `.env.example` to `.env.local` and set each configuration variable to a single-line JSON object copied from Firebase's web app settings. Only apiKey, authDomain, projectId, storageBucket, messagingSenderId and appId are allowed. Local configuration is ignored by Git.
+
+Required GitHub Actions secrets (same JSON values as local configuration):
+- `VITE_FIREBASE_CONFIG`
+- `VITE_CISAPP_FIREBASE_CONFIG`
+
+Set these repository secrets before merging or deploying. Existing deployment service-account secrets remain separate. Firebase web configuration is public and will be included in browser bundles; environment variables keep its values out of source control, not hidden from browser users. Never place passwords, private keys, service-account JSON, access tokens or server API keys in any VITE_* variable. Keep those in server-only environment variables or a secret store. Existing Git history is unchanged; rotate real leaked credentials before any coordinated history cleanup.
+
+The Node sync runner requires the same public configuration variables in process.env, plus the existing server-only SALESAPP_SYNC_EMAIL, SALESAPP_SYNC_PASSWORD, CISAPP_SYNC_EMAIL and CISAPP_SYNC_PASSWORD. GitHub Actions supplies these without placing passwords in the frontend.
+
+## Shared background component
+
+Reusable shadcn-style components live in `src/components/ui`, exposed as `@/components/ui` by Vite and TypeScript. This folder and the aliases in `components.json` give the shadcn CLI a consistent installation target without moving existing components. Existing app styles remain in their original files; `src/background.css` contains the Tailwind utilities and background integration.
+
+TypeScript is already installed. Tailwind v4 is configured through `@tailwindcss/vite`; Preflight is omitted to preserve existing forms and tables. The equivalent dependency command is `npm install clsx tailwind-merge && npm install -D tailwindcss @tailwindcss/vite`. The shadcn configuration is already present; use `npx shadcn@latest add <component>` to add components later. For a fresh project, use `npx shadcn@latest init`.
+
+`Hero` and `HeroDemo` require no data, state, providers, images or icons. `AppBackground` mounts the decorative gradient behind all routes, fills desktop/mobile viewports, and never intercepts pointer input.

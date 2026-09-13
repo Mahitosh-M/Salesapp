@@ -1,3 +1,5 @@
+import { assertLoginInput } from "../inputSecurity";
+import { readFirebaseConfig } from '../publicFirebaseConfig';
 // Imported only by the Admin Sync screen after an explicit Connect action.
 // No Project A Firestore SDK or database handle is exposed to the browser.
 import { initializeApp, getApps } from "firebase/app";
@@ -9,12 +11,7 @@ import {
   signOut,
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-const config = {
-  apiKey: "AIzaSyATEp0aDCh1vLcI21KB3Nphy5Rygy7_CMU",
-  authDomain: "cisapp-236ab.firebaseapp.com",
-  projectId: "cisapp-236ab",
-  appId: "1:835565586103:web:c46c8f8137288c21366f32",
-};
+const config = readFirebaseConfig(import.meta.env?.VITE_CISAPP_FIREBASE_CONFIG, 'VITE_CISAPP_FIREBASE_CONFIG');
 const app =
   getApps().find((a) => a.name === "cisapp-sync-auth") ||
   initializeApp(config, "cisapp-sync-auth");
@@ -31,6 +28,7 @@ async function ready() {
 }
 
 export async function connect(email: string, password: string) {
+  assertLoginInput(email, password);
   await ready();
   await signInWithEmailAndPassword(cisAuth, email.trim(), password);
 }

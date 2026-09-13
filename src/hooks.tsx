@@ -1,3 +1,4 @@
+import { assertLoginInput } from "./inputSecurity";
 import {
   createContext,
   useContext,
@@ -71,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         error,
         login: async (e, p) => {
+          assertLoginInput(e, p);
           setError("");
           const normalizedEmail = e.trim().toLowerCase();
           await withLoginRateLimit(normalizedEmail, () =>

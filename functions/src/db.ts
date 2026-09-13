@@ -1,3 +1,4 @@
+import { assertUserInput } from "../../shared/inputSecurity";
 import { initializeApp, getApps } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { getAuth } from "firebase-admin/auth";
@@ -15,6 +16,7 @@ export async function actor(
   request: CallableRequest,
   admin = false,
 ): Promise<Profile> {
+  try { assertUserInput(request.data); } catch (error) { throw new HttpsError("invalid-argument", error instanceof Error ? error.message : "Invalid input"); }
   if (!request.auth)
     throw new HttpsError("unauthenticated", "Sign in to Salesapp");
   const snap = await salesDb.doc(`users/${request.auth.uid}`).get();

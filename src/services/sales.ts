@@ -1,3 +1,4 @@
+import { assertUserInput } from "../inputSecurity";
 ﻿import {
   collection,
   doc,
@@ -26,6 +27,7 @@ export const command = async <T = Data>(
   name: string,
   data: Data,
 ): Promise<T> => {
+  assertUserInput(data);
   const commands = await import("../spark/commands");
   const fn = commands[name as keyof typeof commands];
   if (typeof fn !== "function") throw new Error("Unknown action");

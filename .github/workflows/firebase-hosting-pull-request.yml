@@ -7,6 +7,9 @@ jobs:
   build_and_preview:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
+    env:
+      VITE_FIREBASE_CONFIG: ${{ secrets.VITE_FIREBASE_CONFIG }}
+      VITE_CISAPP_FIREBASE_CONFIG: ${{ secrets.VITE_CISAPP_FIREBASE_CONFIG }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

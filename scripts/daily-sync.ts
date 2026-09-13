@@ -1,3 +1,4 @@
+import { readFirebaseConfig } from '../src/publicFirebaseConfig';
 import { deleteApp, initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -34,12 +35,7 @@ if (process.argv.includes("--check")) {
 }
 
 const cisApp = initializeApp(
-  {
-    apiKey: "AIzaSyATEp0aDCh1vLcI21KB3Nphy5Rygy7_CMU",
-    authDomain: "cisapp-236ab.firebaseapp.com",
-    projectId: "cisapp-236ab",
-    appId: "1:835565586103:web:c46c8f8137288c21366f32",
-  },
+  readFirebaseConfig(process.env.VITE_CISAPP_FIREBASE_CONFIG, 'VITE_CISAPP_FIREBASE_CONFIG'),
   "scheduled-cisapp-sync",
 );
 const cisAuth = getAuth(cisApp);

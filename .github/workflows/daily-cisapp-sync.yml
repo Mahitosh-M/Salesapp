@@ -16,6 +16,9 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    env:
+      VITE_FIREBASE_CONFIG: ${{ secrets.VITE_FIREBASE_CONFIG }}
+      VITE_CISAPP_FIREBASE_CONFIG: ${{ secrets.VITE_CISAPP_FIREBASE_CONFIG }}
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
